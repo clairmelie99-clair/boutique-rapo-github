@@ -1,6 +1,30 @@
 // Vercel Serverless Function: api/activate-license.js
 // Aktive yon lisans kliyan nan Supabase apre li fin antre kòd aktivasyon an.
-// Enrejistre oswa mete ajou liy kliyan an nan baz done santral la otomatikman.
+
+import https from 'https';
+
+function httpsRequest(url, method, headers, body) {
+  return new Promise((resolve, reject) => {
+    const parsed = new URL(url);
+    const options = {
+      hostname: parsed.hostname,
+      path: parsed.pathname + parsed.search,
+      method,
+      headers
+    };
+    const req = https.request(options, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        try { resolve({ ok: res.statusCode < 400, status: res.statusCode, data: data ? JSON.parse(data) : null }); }
+        catch (e) { resolve({ ok: res.statusCode < 400, status: res.statusCode, data: null }); }
+      });
+    });
+    req.on('error', reject);
+    if (body) req.write(body);
+    req.end();
+  });
+}
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -25,15 +49,13 @@ export default async function handler(req, res) {
   const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 
   if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
-    // Mòd deградasyon — retounen siksè menm si baz done pa konfigire
     return res.status(200).json({ success: true, source: 'fallback' });
   }
 
-  // Kalkile dat ekspirasyon an (31 jou apati jodi a)
   const activatedAt = new Date().toISOString();
   const expiresAt = new Date(Date.now() + 31 * 24 * 60 * 60 * 1000).toISOString();
 
-  const licenceData = {
+  const licenceData = JSON.stringify({
     device_id: deviceId,
     shop_name: shopName || 'Boutique ClairMarché',
     status: 'active',
@@ -42,27 +64,24 @@ export default async function handler(req, res) {
     expires_at: expiresAt,
     whatsapp: whatsapp || null,
     notes: `Aktive otomatikman — Plan ${plan}`
+  });
+
+  const headers = {
+    'apikey': SUPABASE_SERVICE_KEY,
+    'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
+    'Content-Type': 'application/json',
+    'Prefer': 'resolution=merge-duplicates',
+    'Content-Length': Buffer.byteLength(licenceData)
   };
 
   try {
-    // Upsert (kreye si pa egziste, mete ajou si egziste)
-    const resp = await fetch(
+    const result = await httpsRequest(
       `${SUPABASE_URL}/rest/v1/licences`,
-      {
-        method: 'POST',
-        headers: {
-          'apikey': SUPABASE_SERVICE_KEY,
-          'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
-          'Content-Type': 'application/json',
-          'Prefer': 'resolution=merge-duplicates'
-        },
-        body: JSON.stringify(licenceData)
-      }
+      'POST', headers, licenceData
     );
 
-    if (!resp.ok) {
-      const errText = await resp.text();
-      return res.status(500).json({ error: `Supabase error: ${errText}` });
+    if (!result.ok) {
+      return res.status(500).json({ error: `Supabase error: ${result.status}` });
     }
 
     return res.status(200).json({

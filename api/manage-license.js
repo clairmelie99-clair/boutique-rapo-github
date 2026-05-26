@@ -1,6 +1,31 @@
 // Vercel Serverless Function: api/manage-license.js
 // Kontwòl a distans: Bloke, Deblike, Renouvle, ak Lis tout kliyan yo.
-// PWOTEJE ak MASTER_API_KEY — Sèlman MASTER-DEV ou a ka rele endpoint sa a!
+// PWOTEJE ak MASTER_API_KEY
+
+import https from 'https';
+
+function httpsRequest(url, method, headers, body) {
+  return new Promise((resolve, reject) => {
+    const parsed = new URL(url);
+    const options = {
+      hostname: parsed.hostname,
+      path: parsed.pathname + parsed.search,
+      method,
+      headers
+    };
+    const req = https.request(options, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        try { resolve({ ok: res.statusCode < 400, status: res.statusCode, data: data ? JSON.parse(data) : null }); }
+        catch (e) { resolve({ ok: res.statusCode < 400, status: res.statusCode, data: null }); }
+      });
+    });
+    req.on('error', reject);
+    if (body) req.write(body);
+    req.end();
+  });
+}
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -9,7 +34,6 @@ export default async function handler(req, res) {
 
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  // ── Verifye kle sekrè MASTER a ──────────────────────────────────────────
   const masterKey = req.headers['x-master-key'] || req.query.key;
   const MASTER_API_KEY = process.env.MASTER_API_KEY;
 
@@ -24,7 +48,7 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Baz done pa konfigire.' });
   }
 
-  const headers = {
+  const baseHeaders = {
     'apikey': SUPABASE_SERVICE_KEY,
     'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
     'Content-Type': 'application/json',
@@ -34,115 +58,96 @@ export default async function handler(req, res) {
   try {
     // ── GET: Jwenn lis tout kliyan yo ──────────────────────────────────────
     if (req.method === 'GET') {
-      const resp = await fetch(
+      const result = await httpsRequest(
         `${SUPABASE_URL}/rest/v1/licences?select=*&order=created_at.desc`,
-        { headers }
+        'GET', baseHeaders, null
       );
-      const data = await resp.json();
+      const data = result.data || [];
       return res.status(200).json({ licences: data, count: data.length });
     }
 
-    // ── POST: Aksyon sou yon kliyan ─────────────────────────────────────────
     if (req.method === 'POST') {
       const { action, deviceId, plan, months, notes, shopName, whatsapp } = req.body || {};
 
       if (!action) return res.status(400).json({ error: 'action obligatwa.' });
 
-      // ── Lis tout kliyan (via POST tou) ──
+      // ── Lis kliyan yo ──
       if (action === 'list') {
-        const resp = await fetch(
+        const result = await httpsRequest(
           `${SUPABASE_URL}/rest/v1/licences?select=*&order=created_at.desc`,
-          { headers }
+          'GET', baseHeaders, null
         );
-        const data = await resp.json();
+        const data = result.data || [];
         return res.status(200).json({ licences: data, count: data.length });
       }
 
-      if (!deviceId) return res.status(400).json({ error: 'deviceId obligatwa pou aksyon sa a.' });
+      if (!deviceId) return res.status(400).json({ error: 'deviceId obligatwa.' });
 
-      // ── Bloke kliyan (Suspend) ──
+      // ── Bloke kliyan ──
       if (action === 'suspend') {
-        const resp = await fetch(
+        const patchBody = JSON.stringify({
+          status: 'suspended',
+          notes: notes || `Sispann pa admin — ${new Date().toLocaleDateString('fr-HT')}`
+        });
+        const result = await httpsRequest(
           `${SUPABASE_URL}/rest/v1/licences?device_id=eq.${encodeURIComponent(deviceId)}`,
-          {
-            method: 'PATCH',
-            headers,
-            body: JSON.stringify({
-              status: 'suspended',
-              notes: notes || `Sispann pa admin — ${new Date().toLocaleDateString('fr-HT')}`
-            })
-          }
+          'PATCH', baseHeaders, patchBody
         );
-        const data = await resp.json();
-        return res.status(200).json({ success: true, action: 'suspended', updated: data });
+        return res.status(200).json({ success: true, action: 'suspended' });
       }
 
-      // ── Deblike / Aktive / Renouvle kliyan ──
+      // ── Aktive / Renouvle kliyan ──
       if (action === 'activate') {
         const numMonths = parseInt(months) || 1;
         const expiresAt = new Date(Date.now() + numMonths * 31 * 24 * 60 * 60 * 1000).toISOString();
         const activatedAt = new Date().toISOString();
 
-        // Tcheke si kliyan deja egziste
-        const checkResp = await fetch(
+        // Tcheke si deja egziste
+        const checkResult = await httpsRequest(
           `${SUPABASE_URL}/rest/v1/licences?device_id=eq.${encodeURIComponent(deviceId)}&select=device_id`,
-          { headers }
+          'GET', baseHeaders, null
         );
-        const existing = await checkResp.json();
+        const existing = checkResult.data || [];
 
-        let resp;
-        if (existing && existing.length > 0) {
-          // Mete ajou si deja la
-          resp = await fetch(
+        if (existing.length > 0) {
+          // Mete ajou
+          const patchBody = JSON.stringify({
+            status: 'active',
+            plan: plan || 'team',
+            expires_at: expiresAt,
+            activated_at: activatedAt,
+            notes: notes || `Renouvle pa admin — ${numMonths} mwa`
+          });
+          await httpsRequest(
             `${SUPABASE_URL}/rest/v1/licences?device_id=eq.${encodeURIComponent(deviceId)}`,
-            {
-              method: 'PATCH',
-              headers,
-              body: JSON.stringify({
-                status: 'active',
-                plan: plan || 'team',
-                expires_at: expiresAt,
-                activated_at: activatedAt,
-                notes: notes || `Renouvle pa admin — ${numMonths} mwa`
-              })
-            }
+            'PATCH', baseHeaders, patchBody
           );
         } else {
-          // Kreye si poko egziste
-          resp = await fetch(
+          // Kreye nouvo
+          const postBody = JSON.stringify({
+            device_id: deviceId,
+            shop_name: shopName || 'Boutique ClairMarché',
+            status: 'active',
+            plan: plan || 'team',
+            activated_at: activatedAt,
+            expires_at: expiresAt,
+            whatsapp: whatsapp || null,
+            notes: notes || `Kreye pa admin — ${new Date().toLocaleDateString('fr-HT')}`
+          });
+          await httpsRequest(
             `${SUPABASE_URL}/rest/v1/licences`,
-            {
-              method: 'POST',
-              headers,
-              body: JSON.stringify({
-                device_id: deviceId,
-                shop_name: shopName || 'Boutique ClairMarché',
-                status: 'active',
-                plan: plan || 'team',
-                activated_at: activatedAt,
-                expires_at: expiresAt,
-                whatsapp: whatsapp || null,
-                notes: notes || `Kreye pa admin — ${new Date().toLocaleDateString('fr-HT')}`
-              })
-            }
+            'POST', { ...baseHeaders, 'Prefer': 'resolution=merge-duplicates' }, postBody
           );
         }
 
-        const data = await resp.json();
-        return res.status(200).json({
-          success: true,
-          action: 'activated',
-          plan,
-          expires_at: expiresAt,
-          updated: data
-        });
+        return res.status(200).json({ success: true, action: 'activated', plan, expires_at: expiresAt });
       }
 
-      // ── Efase kliyan nèt ──
+      // ── Efase kliyan ──
       if (action === 'delete') {
-        const resp = await fetch(
+        await httpsRequest(
           `${SUPABASE_URL}/rest/v1/licences?device_id=eq.${encodeURIComponent(deviceId)}`,
-          { method: 'DELETE', headers }
+          'DELETE', baseHeaders, null
         );
         return res.status(200).json({ success: true, action: 'deleted' });
       }
