@@ -6341,54 +6341,57 @@ function showSuspendedScreen() {
 
 // ── CHECK LICENSE ONLINE (Vercel API → Supabase) ───────────────────────────
 async function checkLicenseOnline() {
-  // Sèlman tcheke si aparèy la gen yon deviceId valid
   if (!deviceId) return;
 
-  // Pran dat dènye tchèk lokal la (pou mòd ibrid — 3 jou maks san entènèt)
   const lastCheck = parseInt(localStorage.getItem('br_last_online_check') || '0', 10);
   const OFFLINE_GRACE_DAYS = 3;
   const offlineGraceMs = OFFLINE_GRACE_DAYS * 24 * 60 * 60 * 1000;
 
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 6000);
+
     const resp = await fetch(
       `/api/check-license?deviceId=${encodeURIComponent(deviceId)}`,
-      { signal: AbortSignal.timeout(5000) }
+      { signal: controller.signal }
     );
+    clearTimeout(timeoutId);
 
     if (!resp.ok) throw new Error('Sèvè a pa reponn');
     const data = await resp.json();
 
-    // Sove dat dènye koneksyon reyèsi a
     localStorage.setItem('br_last_online_check', Date.now().toString());
 
     if (data.status === 'suspended' || data.status === 'expired') {
-      // Bloke app la imedyatman — kliyan pa ka pase ekran sa a!
       showSuspendedScreen();
       return;
     }
 
     if (data.status === 'active' && data.plan) {
-      // Mete ajou estati lokal la avèk enfòmasyon sèvè a (plis egzak)
       licenseState.status = 'active';
       licenseState.plan = data.plan;
       if (data.expires_at) {
         licenseState.expiresAt = new Date(data.expires_at).getTime();
       }
       if (typeof saveLicense === 'function') saveLicense();
+      
+      // Update UI in real-time if we are on the settings page
+      if (typeof updateLicenseBadgeSettings === 'function') {
+        updateLicenseBadgeSettings();
+      }
+      if (typeof applyPlanRestrictions === 'function') {
+        applyPlanRestrictions();
+      }
     }
 
   } catch (err) {
-    // Pa gen entènèt oswa sèvè a pa reponn — mòd ibrid
     const timeSinceLastCheck = Date.now() - lastCheck;
     if (lastCheck > 0 && timeSinceLastCheck > offlineGraceMs) {
-      // Plis pase 3 jou san koneksyon — bloke pou presosyon
-      // (Sèlman si lisans pa t jamè 'active' lokal)
       if (licenseState.status !== 'active') {
         showSuspendedScreen();
       }
     }
-    // Sinon: kontinye nòmalman (mòd ibrid aktif)
-    console.warn('[ClairMarché] Mòd ibrid — tchèk lisans pa posib kounye a.');
+    console.warn('[ClairMarché] Mòd ibrid — tchèk lisans pa posib kounye a:', err.message);
   }
 }
 
