@@ -3,23 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>BiznisRapò — Edition Client</title>
-<meta name="description" content="BoutiqueRapò — Sistèm POS pou ti boutique ayisyen. Vann, rapò, dèt, depans ak asistan IA.">
+<title>ClairMarché — Edition Client</title>
+<meta name="description" content="ClairMarché — Sistèm POS pwofesyonèl pou ti biznis. Jere stock, lavant, dèt ak rapò pou tout kalite biznis.">
 <meta name="theme-color" content="#0d0d0d">
 <meta name="background-color" content="#0d0d0d">
 
 <!-- PWA / App Install -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="BoutiqueRapò">
+<meta name="apple-mobile-web-app-title" content="ClairMarché">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="application-name" content="BoutiqueRapò">
+<meta name="application-name" content="ClairMarché">
 
 <!-- Open Graph -->
-<meta property="og:title" content="BiznisRapò — Edition Client">
-<meta property="og:description" content="Jere boutique ou fasil — Vann, Rapò, Dèt ak IA">
+<meta property="og:title" content="ClairMarché — Edition Client">
+<meta property="og:description" content="Jere stock, lavant, dèt ak rapò pou tout kalite biznis">
 <meta property="og:type" content="app">
 
+<link rel="icon" type="image/png" href="./icon.png">
+<link rel="apple-touch-icon" href="./icon.png">
 <link rel="manifest" href="./manifest.webmanifest">
 
 <!-- Splash / Icon colors -->
@@ -1771,8 +1773,8 @@ body {
 
 <!-- ══ SPLASH SCREEN ══════════════════════════════════════════════════════ -->
 <div class="app-splash" id="app-splash">
-  <div class="splash-logo">🏪</div>
-  <div class="splash-name">Boutique<span>Rapò</span></div>
+  <img src="./icon.png" style="width:80px;height:80px;border-radius:20px;margin-bottom:16px;object-fit:cover;border:1px solid #333;box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+  <div class="splash-name">Clair<span>Marché</span></div>
   <div class="splash-bar"><div class="splash-progress"></div></div>
   <div class="splash-sub" id="splash-version">v2.0 · Chajman...</div>
 </div>
@@ -1781,7 +1783,7 @@ body {
 <div class="install-banner" id="install-banner">
   <div class="install-banner-text">
     📲 Enstale App la
-    <span>Ajoute BoutiqueRapò sou ekran ou</span>
+    <span>Ajoute ClairMarché sou ekran ou</span>
   </div>
   <button class="install-btn-yes" id="install-btn-yes">Enstale</button>
   <button class="install-btn-no" onclick="dismissInstall()">✕</button>
@@ -1799,9 +1801,9 @@ body {
   ">
     <!-- SCREEN 1: ROLE SELECTION -->
     <div id="pin-role-select">
-      <div style="font-size:2.4rem;margin-bottom:10px;">🏪</div>
-      <div style="font-size:1.3rem;font-weight:800;margin-bottom:6px;color:#f5c542;">
-        Biznis<span>Rapò</span>
+      <img src="./icon.png" style="width:72px;height:72px;border-radius:18px;margin-bottom:12px;object-fit:cover;border:1px solid #333;box-shadow:0 8px 24px rgba(0,0,0,0.4);">
+      <div style="font-size:1.4rem;font-weight:800;margin-bottom:6px;color:#f5c542;">
+        Clair<span>Marché</span>
       </div>
       <div style="font-size:.8rem;color:#777;margin-bottom:24px;">
         Chwazi sesyon ou vle ouvri a:
@@ -2510,7 +2512,7 @@ body {
   
     <div class="param-input-row">
       <div class="param-label">Non App</div>
-      <input class="param-input" type="text" id="brand-app-name" placeholder="BoutiqueRapò">
+      <input class="param-input" type="text" id="brand-app-name" placeholder="ClairMarché">
     </div>
   
     <div class="param-input-row">
@@ -2629,7 +2631,7 @@ body {
     line-height:1.6;
     padding:18px 8px 6px;
   ">
-    <div style="color:var(--gold);font-weight:800;">BoutiqueRapò POS — Edition Client</div>
+    <div style="color:var(--gold);font-weight:800;">ClairMarché POS — Edition Client</div>
     <div>Version pou kliyan: san jeneratè lisans</div>
     <div id="footer-version">v1.0.0 · Klè Tech</div>
   </div>
@@ -2647,7 +2649,7 @@ body {
 
     <div class="trial-header">
       <div class="trial-icon">🔓</div>
-      <div class="trial-title" id="paywall-title">Kontinye BoutiqueRapò</div>
+      <div class="trial-title" id="paywall-title">Kontinye ClairMarché</div>
       <div class="trial-sub" id="paywall-sub">Chwazi yon plan pou kontinye itilize app la san entèripsyon</div>
     </div>
 
@@ -2705,7 +2707,7 @@ body {
       <div class="natcash-info visible" id="natcash-info">
         <div style="font-size:0.7rem;color:#aaa;text-align:center;margin-bottom:4px;">Voye peman nan nimewo sa a:</div>
         <div class="natcash-number" id="natcash-display-number">📱 +509 43403804</div>
-        <div class="natcash-name" id="natcash-display-name">Non: BoutiqueRapò Dev</div>
+        <div class="natcash-name" id="natcash-display-name">Non: ClairMarché Dev</div>
         <div class="natcash-amount" id="natcash-display-amount">💰 250 HTG</div>
         <div style="font-size:0.63rem;color:#666;text-align:center;margin-top:7px;line-height:1.6;">
           Apre ou voye, klike bouton WhatsApp la pou konfime ak screenshot.
@@ -2716,7 +2718,7 @@ body {
       <div class="natcash-info" id="moncash-info" style="background:rgba(64,196,255,0.06);border:1px solid rgba(64,196,255,0.2);border-radius:12px;padding:13px;margin-bottom:10px;display:none;">
         <div style="font-size:0.7rem;color:#aaa;text-align:center;margin-bottom:4px;">Voye peman NatCash nan:</div>
         <div class="moncash-number" id="moncash-display-number" style="font-family:'Space Mono',monospace;font-size:1.2rem;font-weight:700;color:#40c4ff;text-align:center;letter-spacing:2px;margin:6px 0;">📱 +509 43403804</div>
-        <div id="moncash-display-name" style="font-size:0.7rem;color:#aaa;text-align:center;">Non: BoutiqueRapò Dev</div>
+        <div id="moncash-display-name" style="font-size:0.7rem;color:#aaa;text-align:center;">Non: ClairMarché Dev</div>
         <div id="moncash-display-amount" style="font-size:0.85rem;font-weight:700;color:#00e676;text-align:center;margin-top:5px;">💰 250 HTG</div>
         <div style="font-size:0.63rem;color:#666;text-align:center;margin-top:7px;line-height:1.6;">
           Apre ou voye, klike bouton WhatsApp la pou konfime ak screenshot.
@@ -2824,7 +2826,7 @@ body {
     <div class="chatbot-header">
       <div class="chatbot-avatar">🤖</div>
       <div class="chatbot-header-info">
-        <div class="chatbot-title">Asistan BoutiqueRapò</div>
+        <div class="chatbot-title">Asistan ClairMarché</div>
         <div class="chatbot-status">IA ap travay</div>
       </div>
       <button class="chatbot-close" onclick="closeChatbot()">✕</button>
@@ -3047,7 +3049,7 @@ function lockApp() {
 }
 
 function applyBranding() {
-  const appName = appBrand.appName || 'BoutiqueRapò';
+  const appName = appBrand.appName || 'ClairMarché';
   const devName = appBrand.developer || 'Klè Tech';
   
   let styledHTML = appName;
@@ -3058,6 +3060,9 @@ function applyBranding() {
   } else if (nameLower.includes('boutique')) {
     const idx = nameLower.indexOf('boutique') + 'boutique'.length;
     styledHTML = appName.substring(0, idx) + '<span>' + appName.substring(idx) + '</span>';
+  } else if (nameLower.includes('clairmarché') || nameLower.includes('clairmarche')) {
+    // Exact match styling for ClairMarché
+    styledHTML = 'Clair<span>Marché</span>';
   } else {
     const mid = Math.floor(appName.length / 2);
     styledHTML = appName.substring(0, mid) + '<span>' + appName.substring(mid) + '</span>';
@@ -3087,7 +3092,7 @@ function loadBrandingForm() {
   const devNameInput = document.getElementById('brand-dev-name');
   const versionLabel = document.getElementById('app-version-label');
 
-  if (appNameInput) appNameInput.value = appBrand.appName || 'BoutiqueRapò';
+  if (appNameInput) appNameInput.value = appBrand.appName || 'ClairMarché';
   if (devNameInput) devNameInput.value = appBrand.developer || 'Klè Tech';
   if (versionLabel) versionLabel.textContent = 'v' + appVersion + ' (PWA + IA)';
 
@@ -3095,7 +3100,7 @@ function loadBrandingForm() {
 }
 
 function saveBranding() {
-  const appName = document.getElementById('brand-app-name').value.trim() || 'BoutiqueRapò';
+  const appName = document.getElementById('brand-app-name').value.trim() || 'ClairMarché';
   const developer = document.getElementById('brand-dev-name').value.trim() || 'Klè Tech';
 
   appBrand = { appName, developer };
@@ -3928,7 +3933,7 @@ function sendWhatsApp() {
   const mc = dayTx.filter(t=>t.peman==='NatCash').reduce((s,t)=>s+t.totalVant,0);
   const kr = dayTx.filter(t=>t.peman==='Kredi').reduce((s,t)=>s+t.totalVant,0);
 
-  const msg = `📊 *RAPÒ BOUTIQUE*%0a${dateStr}%0a%0a💰 Vant Total: *${totalVant.toLocaleString('fr-HT')} HTG*%0a📈 Pwofi Pwodwi: *${totalProfitProducts.toLocaleString('fr-HT')} HTG*%0a🧾 Depans: *${totalDep.toLocaleString('fr-HT')} HTG*%0a✅ Pwòfi Net: *${pwòfi.toLocaleString('fr-HT')} HTG*%0a%0a💳 Cash: ${cash.toLocaleString('fr-HT')} HTG%0a💚 NatCash: ${mc.toLocaleString('fr-HT')} HTG%0a📋 Kredi: ${kr.toLocaleString('fr-HT')} HTG%0a%0a🏆 *Top Pwodwi:*%0a${topStr}%0a%0a📦 ${dayTx.length} tranksasyon%0a——%0a_BoutiqueRapò_`;
+  const msg = `📊 *RAPÒ BIZNIS*%0a${dateStr}%0a%0a💰 Vant Total: *${totalVant.toLocaleString('fr-HT')} HTG*%0a📈 Pwofi Pwodwi: *${totalProfitProducts.toLocaleString('fr-HT')} HTG*%0a🧾 Depans: *${totalDep.toLocaleString('fr-HT')} HTG*%0a✅ Pwòfi Net: *${pwòfi.toLocaleString('fr-HT')} HTG*%0a%0a💳 Cash: ${cash.toLocaleString('fr-HT')} HTG%0a💚 NatCash: ${mc.toLocaleString('fr-HT')} HTG%0a📋 Kredi: ${kr.toLocaleString('fr-HT')} HTG%0a%0a🏆 *Top Pwodwi:*%0a${topStr}%0a%0a📦 ${dayTx.length} tranksasyon%0a——%0a_${appBrand.appName || 'ClairMarché'}_`;
 
   window.open(`https://wa.me/?text=${msg}`, '_blank');
 }
@@ -4772,7 +4777,7 @@ const ONLINE_SHOPS_API = '/api/shops';
 let localTestMode = localStorage.getItem('br_local_test_mode') === 'yes';
 let localTestShopId = localStorage.getItem('br_local_test_shop_id') || '';
 let appVersion = localStorage.getItem('br_version') || '2.0.0';
-let appBrand = JSON.parse(localStorage.getItem('br_brand') || '{"appName":"BoutiqueRapò","developer":"Klè Tech"}');
+let appBrand = JSON.parse(localStorage.getItem('br_brand') || '{"appName":"ClairMarché","developer":"Klè Tech"}');
 
 function isLocalTestMode() {
   return localTestMode;
@@ -5398,7 +5403,7 @@ function printRapò() {
   <table><thead><tr><th>Pwodwi</th><th>Qté</th><th>Total</th></tr></thead><tbody>
     ${topArr.map(([n,d])=>`<tr><td>${d.emoji} ${n}</td><td>${d.qty}</td><td>${d.total.toLocaleString('fr-HT')} HTG</td></tr>`).join('')}
   </tbody></table>
-  <div class="footer">Enprime pa BoutiqueRapò · ${new Date().toLocaleString('fr-HT')}</div>
+  <div class="footer">Enprime pa ${appBrand.appName || 'ClairMarché'} · ${new Date().toLocaleString('fr-HT')}</div>
   </body></html>`);
   w.document.close();
   setTimeout(()=>{w.print();}, 500);
@@ -5462,7 +5467,7 @@ function printRapòMwa() {
   <table><thead><tr><th>Top Pwodwi</th><th>Qté</th><th>Total</th></tr></thead><tbody>
     ${topArr.map(([n,d])=>`<tr><td>${d.emoji} ${n}</td><td>${d.qty}</td><td>${d.total.toLocaleString('fr-HT')} HTG</td></tr>`).join('')}
   </tbody></table>
-  <div class="footer">Enprime pa BoutiqueRapò · ${new Date().toLocaleString('fr-HT')}</div>
+  <div class="footer">Enprime pa ${appBrand.appName || 'ClairMarché'} · ${new Date().toLocaleString('fr-HT')}</div>
   </body></html>`);
   w.document.close();
   setTimeout(()=>{w.print();}, 500);
@@ -5763,7 +5768,7 @@ function switchPage(id, btn) {
 //-- About app------------------------------------------------------------------------------
 function showAboutApp() {
   alert(
-    `${appBrand.appName || 'BoutiqueRapò'} POS\n\n` +
+    `${appBrand.appName || 'ClairMarché'} POS\n\n` +
     `Version: ${appVersion}\n` +
     `Developer: ${appBrand.developer || 'Klè Tech'}\n\n` +
     `Fonksyon prensipal:\n` +
@@ -5947,7 +5952,7 @@ function sendChatMessage(overrideText) {
   todayTx.forEach(t=>t.items.forEach(i=>{byProd[i.name]=(byProd[i.name]||0)+i.total;}));
   const topToday = Object.entries(byProd).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([n,v])=>`${n}: ${v.toLocaleString('fr-HT')} HTG`).join(', ') || 'Okenn vant jodi a';
 
-  const systemPrompt = `Ou se "Asistan BoutiqueRapò", yon asistan IA entèlijan pou yon ti boutique ayisyen.
+  const systemPrompt = `Ou se "Asistan ClairMarché", yon asistan IA entèlijan pou yon ti biznis ayisyen.
 Ou pale **Kreyòl ayisyen** sèlman, natirèl ak amical. Ou ba repons ki kout, klè ak itil.
 Ou ka itilize bold (**tèks**) ak newlines (\n) pou fòmate repons ou.
 
@@ -6043,8 +6048,8 @@ function getLocalAIReply(q, d) {
   }
 
   // 2. FEATURE HOW-TO KNOWLEDGE BASE (General Offline Intelligence)
-  if (hasKeyword(['kisa', 'boutique', 'boutiquerapo', 'aplikasyon', 'app', 'sistèm', 'sistem'])) {
-    return `🏪 **BoutiqueRapò POS** se yon sistèm pwen de vant (POS) premium ki fèt espesyalman pou ti boutik ak biznis an Ayiti.\n\nLi ede ou jere:\n- 🛒 Vant ak Kès\n- 📦 Pwodwi ak envantè\n- 💳 Dèt ak Kredi kliyan\n- 🧾 Depans jounen yo\n- 🛵 Kòmand online ak livrezon\n\nLi travay **100% offline** san entènèt pou sipòte w kèlkeswa kote w ye!`;
+  if (hasKeyword(['kisa', 'clairmarché', 'clairmarche', 'boutique', 'aplikasyon', 'app', 'sistèm', 'sistem'])) {
+    return `🏪 **ClairMarché POS** se yon sistèm pwen de vant (POS) premium ki fèt espesyalman pou ti biznis an Ayiti.\n\nLi ede ou jere:\n- 🛒 Vant ak Kès\n- 📦 Pwodwi ak envantè\n- 💳 Dèt ak Kredi kliyan\n- 🧾 Depans jounen yo\n- 🛵 Kòmand online ak livrezon\n\nLi travay **100% offline** san entènèt pou sipòte w kèlkeswa kote w ye!`;
   }
   if (hasKeyword(['ajoute pwodwi', 'kreye pwodwi', 'mete pwodwi', 'katalòg', 'katalog', 'pwodwi'])) {
     return `📦 **Kouman pou ajoute pwodwi nan Katalòg la:**\n\n1. Klike sou ☰ (anlè a gòch) pou ouvri meni an.\n2. Chwazi **Pwodwi (Katalòg)**.\n3. Klike sou bouton **"Ajoute Pwodwi"**.\n4. Ranpli non pwodwi a, chwazi yon Emoji, antre **pri vann nan**, ak **pri achte a** (pou pwofi yo ka kalkile kòrèkteman).\n5. Antre kantite **stock** la (oswa kite l vid si l san limit), epi klike sou **Ajoute**.`;
@@ -6080,7 +6085,7 @@ function getLocalAIReply(q, d) {
     return `💡 **Konsèy pou biznis ou:**\n\n${tips[Math.floor(Math.random() * tips.length)]}`;
   }
   if (hasKeyword(['bonjou', 'alo', 'salye', 'koman', 'chache', 'hello', 'hi'])) {
-    return `Bonjou! 😊 Mwen se **Asistan BoutiqueRapò**. Mwen la pou ede ou ak tout kesyon sou app la ak done boutik ou.\n\nJodi a:\n💰 Vant: ${fmt(d.totalVantToday)}\n✅ Pwòfi: ${fmt(d.pwòfiToday)}\n\nKijan m ka ede ou?`;
+    return `Bonjou! 😊 Mwen se **Asistan ClairMarché**. Mwen la pou ede ou ak tout kesyon sou app la ak done boutik ou.\n\nJodi a:\n💰 Vant: ${fmt(d.totalVantToday)}\n✅ Pwòfi: ${fmt(d.pwòfiToday)}\n\nKijan m ka ede ou?`;
   }
 
   // Default Help Menu
