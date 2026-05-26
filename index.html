@@ -6196,8 +6196,36 @@ function createDeviceId() {
   return 'BR-' + part() + '-' + part();
 }
 
-let deviceId = localStorage.getItem('br_device_id') || createDeviceId();
-localStorage.setItem('br_device_id', deviceId);
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+  return null;
+}
+function setCookie(name, value, days = 3650) {
+  const d = new Date();
+  d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
+  const expires = "expires=" + d.toUTCString();
+  document.cookie = `${name}=${value};${expires};path=/;SameSite=Strict`;
+}
+function getPersistentDeviceId() {
+  let id = localStorage.getItem('br_device_id');
+  let cookieId = getCookie('br_device_id');
+  
+  if (id && !cookieId) {
+    setCookie('br_device_id', id);
+  } else if (!id && cookieId) {
+    localStorage.setItem('br_device_id', cookieId);
+    id = cookieId;
+  } else if (!id && !cookieId) {
+    id = createDeviceId();
+    localStorage.setItem('br_device_id', id);
+    setCookie('br_device_id', id);
+  }
+  return id;
+}
+
+let deviceId = getPersistentDeviceId();
 
 function normalizeDeviceId(id) {
   return String(id || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
@@ -6727,16 +6755,19 @@ function updateLicenseBadgeSettings() {
   const expiresText = licenseState.expiresAt
     ? new Date(licenseState.expiresAt).toLocaleDateString('fr-HT')
     : 'Pa aktive';
+  const isSubscribed = isActive || isCancelled;
   const licenseDebugHtml = `
     <div style="background:rgba(64,196,255,0.06);border:1px solid rgba(64,196,255,0.18);border-radius:12px;padding:14px;margin:0 0 10px;">
-      <div style="font-size:0.72rem;color:var(--blue);font-weight:800;margin-bottom:8px;">📌 ETA ESSAI & APARÈY</div>
+      <div style="font-size:0.72rem;color:var(--blue);font-weight:800;margin-bottom:8px;">📌 ${isSubscribed ? 'ETA LISANS & APARÈY' : 'ETA ESSAI & APARÈY'}</div>
       <div style="display:grid;gap:6px;font-size:0.72rem;color:var(--gray);line-height:1.35;">
-        <div><strong style="color:var(--white);">Enstale depi:</strong> ${installedDate.toLocaleDateString('fr-HT')} (${elapsedDays} jou pase)</div>
-        <div><strong style="color:var(--white);">Jou essai rete:</strong> ${daysLeft} / ${TRIAL_CONFIG.trialDays}</div>
+        ${!isSubscribed ? `
+          <div><strong style="color:var(--white);">Enstale depi:</strong> ${installedDate.toLocaleDateString('fr-HT')} (${elapsedDays} jou pase)</div>
+          <div><strong style="color:var(--white);">Jou essai rete:</strong> ${daysLeft} / ${TRIAL_CONFIG.trialDays}</div>
+        ` : ''}
         <div><strong style="color:var(--white);">Status:</strong> ${licenseState.status || 'trial'}</div>
         <div><strong style="color:var(--white);">Plan:</strong> ${licenseState.plan || 'Essai'}</div>
         <div><strong style="color:var(--white);">Ekspirasyon:</strong> ${expiresText}</div>
-        <div><strong style="color:var(--white);">Device ID:</strong> <span style="font-family:'Space Mono',monospace;color:var(--gold);">${deviceId}</span></div>
+        <div><strong style="color:var(--white);">Device ID:</strong> <span style="font-family:'Space Mono',monospace;color:var(--gold);">${deviceId}</span> <span onclick="restorePreviousDeviceId()" style="color:var(--blue);text-decoration:underline;cursor:pointer;margin-left:8px;font-size:0.65rem;font-weight:700;">🔄 Chanje/Restore</span></div>
       </div>
     </div>`;
 
@@ -6745,6 +6776,21 @@ function updateLicenseBadgeSettings() {
       ${(isActive || isCancelled) ? '🔄 Renouvel / Chanje Plan' : '🔓 Achte Lisans'}
     </button>
     ${isActive ? `<button class="param-btn red" onclick="cancelSubscription()" style="width:100%;padding:12px;font-size:0.88rem;margin-top:8px;">🚫 Dezabòne Kliyan</button>` : ''}`;
+}
+
+function restorePreviousDeviceId() {
+  const oldId = prompt('Antre ansyen Kòd Aparèy ou a (BR-XXXX-XXXX) pou w retabli lisans ou:', deviceId);
+  if (!oldId) return;
+  const cleaned = oldId.trim().toUpperCase();
+  if (cleaned.length < 6 || !cleaned.startsWith('BR-')) {
+    alert('Kòd aparèy la pa valid. Li dwe kòmanse ak BR-');
+    return;
+  }
+  if (confirm(`Èske w vle chanje Kòd Aparèy sa a pou "${cleaned}"?\n\nAplikasyon an pral rechaje pou retabli abònman ou.`)) {
+    localStorage.setItem('br_device_id', cleaned);
+    setCookie('br_device_id', cleaned);
+    window.location.reload();
+  }
 }
 
 // ── AUTO INIT ─────────────────────────────────────────────────────────────

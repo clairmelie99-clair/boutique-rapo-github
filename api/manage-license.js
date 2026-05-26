@@ -58,12 +58,9 @@ export default async function handler(req, res) {
       if (exists) {
         await sbFetch(`licences?device_id=eq.${encodeURIComponent(deviceId)}`, 'PATCH',
           { status: 'active', plan: plan || 'team', expires_at: expiresAt, activated_at: activatedAt,
-            notes: notes || `Renouvle pa admin — ${numMonths} mwa` });
+            notes: notes || `Renouvle pa admin — ${numMonths} mwa`, shop_name: shopName || undefined });
       } else {
-        await sbFetch('licences', 'POST',
-          { device_id: deviceId, shop_name: shopName || 'Boutique ClairMarché',
-            status: 'active', plan: plan || 'team', activated_at: activatedAt,
-            expires_at: expiresAt, whatsapp: whatsapp || null, notes: notes || `Kreye pa admin` });
+        return res.status(200).json({ success: false, error: 'Kòd aparèy sa a pa anrejistre nan app a. Kliyan an dwe ouvri aplikasyon an omwen yon fwa.', version: 'v4' });
       }
       return res.status(200).json({ success: true, action: 'activated', plan, expires_at: expiresAt, version: 'v4' });
     }

@@ -37,7 +37,31 @@ export default async function handler(req, res) {
     const rows = await resp.json();
 
     if (!rows || rows.length === 0) {
-      return res.status(200).json({ status: 'not_found', source: 'db', version: 'v4' });
+      // Auto-register this device as a trial!
+      const insertUrl = `${SUPABASE_URL}/rest/v1/licences`;
+      await fetch(insertUrl, {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_SERVICE_KEY,
+          'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({
+          device_id: deviceId,
+          shop_name: 'Boutique ClairMarché',
+          status: 'trial',
+          plan: 'solo',
+          notes: 'Enskri otomatikman nan premye ouvèti'
+        })
+      }).catch(() => {});
+
+      return res.status(200).json({
+        status: 'trial',
+        plan: 'solo',
+        source: 'db_auto',
+        version: 'v4'
+      });
     }
 
     const lic = rows[0];
