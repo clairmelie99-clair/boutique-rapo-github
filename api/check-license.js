@@ -1,73 +1,69 @@
-// Vercel Serverless Function: api/check-license.js
-// Verifye estati lisans yon aparèy an tan reyèl nan Supabase.
+// Vercel Serverless Function: api/check-license.js — v3 (https module)
 
 import https from 'https';
 
-function httpsGet(url, headers) {
+function supabaseGet(supabaseUrl, serviceKey, path) {
   return new Promise((resolve, reject) => {
-    const parsed = new URL(url);
+    const parsed = new URL(supabaseUrl);
     const options = {
       hostname: parsed.hostname,
-      path: parsed.pathname + parsed.search,
+      port: 443,
+      path: `/rest/v1/${path}`,
       method: 'GET',
-      headers
+      headers: {
+        'apikey': serviceKey,
+        'Authorization': `Bearer ${serviceKey}`,
+        'Content-Type': 'application/json'
+      }
     };
     const req = https.request(options, (res) => {
-      let data = '';
-      res.on('data', chunk => data += chunk);
+      let body = '';
+      res.on('data', d => body += d);
       res.on('end', () => {
-        try { resolve({ ok: res.statusCode < 400, status: res.statusCode, data: JSON.parse(data) }); }
-        catch (e) { resolve({ ok: false, status: res.statusCode, data: null }); }
+        try { resolve({ status: res.statusCode, data: JSON.parse(body) }); }
+        catch (e) { resolve({ status: res.statusCode, data: null, raw: body }); }
       });
     });
-    req.on('error', reject);
+    req.on('error', (e) => reject(e));
+    req.setTimeout(8000, () => { req.destroy(new Error('timeout')); });
     req.end();
   });
 }
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-
   if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'GET') return res.status(405).json({ error: 'Method Not Allowed' });
 
   const { deviceId } = req.query;
-  if (!deviceId || deviceId.length < 5) {
-    return res.status(400).json({ error: 'deviceId obligatwa.' });
-  }
+  if (!deviceId) return res.status(400).json({ error: 'deviceId obligatwa.', version: 'v3' });
 
   const SUPABASE_URL = process.env.SUPABASE_URL;
   const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 
   if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
-    return res.status(200).json({ status: 'active', plan: 'enterprise', source: 'fallback' });
+    return res.status(200).json({ status: 'active', plan: 'enterprise', source: 'fallback', version: 'v3' });
   }
 
   try {
-    const url = `${SUPABASE_URL}/rest/v1/licences?device_id=eq.${encodeURIComponent(deviceId)}&select=status,plan,expires_at,shop_name`;
-    const result = await httpsGet(url, {
-      'apikey': SUPABASE_SERVICE_KEY,
-      'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
-      'Content-Type': 'application/json'
-    });
+    const result = await supabaseGet(
+      SUPABASE_URL,
+      SUPABASE_SERVICE_KEY,
+      `licences?device_id=eq.${encodeURIComponent(deviceId)}&select=status,plan,expires_at,shop_name`
+    );
 
-    if (!result.ok || !result.data) {
-      return res.status(200).json({ status: 'unknown', source: 'db_error' });
+    if (!result.data || !Array.isArray(result.data)) {
+      return res.status(200).json({ status: 'unknown', source: 'db_error', http: result.status, version: 'v3' });
     }
 
-    const rows = result.data;
-    if (!rows || rows.length === 0) {
-      return res.status(200).json({ status: 'not_found', source: 'db' });
+    if (result.data.length === 0) {
+      return res.status(200).json({ status: 'not_found', source: 'db', version: 'v3' });
     }
 
-    const lic = rows[0];
-    const now = Date.now();
+    const lic = result.data[0];
     const expiresAt = lic.expires_at ? new Date(lic.expires_at).getTime() : null;
-
     let effectiveStatus = lic.status;
-    if (effectiveStatus === 'active' && expiresAt && now > expiresAt) {
+    if (effectiveStatus === 'active' && expiresAt && Date.now() > expiresAt) {
       effectiveStatus = 'expired';
     }
 
@@ -76,10 +72,17 @@ export default async function handler(req, res) {
       plan: lic.plan,
       expires_at: lic.expires_at,
       shop_name: lic.shop_name,
-      source: 'db'
+      source: 'db',
+      version: 'v3'
     });
 
   } catch (err) {
-    return res.status(200).json({ status: 'unknown', source: 'exception', error: err.message });
+    return res.status(200).json({
+      status: 'unknown',
+      source: 'exception',
+      error: err.message,
+      errorCode: err.code,
+      version: 'v3'
+    });
   }
 }
