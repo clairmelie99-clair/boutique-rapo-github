@@ -194,14 +194,35 @@ body {
 
 /* ── HOME ── */
 .home-hero {
-  padding: 18px 0 8px;
+  padding: 36px 20px 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at top, rgba(245, 197, 66, 0.08) 0%, rgba(13, 13, 13, 0) 70%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 0 0 24px 24px;
+  margin-bottom: 14px;
 }
 .home-title {
-  font-size: 1.75rem; font-weight: 900; line-height: 1.05;
+  font-size: 2.25rem;
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.8px;
+  text-shadow: 0 4px 12px rgba(0,0,0,0.5);
 }
 .home-title span { color: var(--gold); }
 .home-sub {
-  color: var(--gray); font-size: 0.78rem; margin-top: 6px; font-weight: 500; line-height: 1.4; max-width: 320px; margin-left: auto; margin-right: auto;
+  color: #dedede;
+  font-size: 0.95rem;
+  margin-top: 10px;
+  font-weight: 500;
+  line-height: 1.5;
+  max-width: 320px;
+  letter-spacing: 0.1px;
+  opacity: 0.9;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.4);
 }
 .home-grid {
   display: grid; grid-template-columns: repeat(2, minmax(0,1fr));
@@ -5755,6 +5776,27 @@ function switchPage(id, btn) {
   if (sideBtn) sideBtn.classList.add('active');
   
   closeSidebar();
+  
+  // Set header title dynamically to prevent redundancy
+  const headerTitle = document.querySelector('.app-header-title');
+  if (headerTitle) {
+    if (id === 'home') {
+      headerTitle.style.visibility = 'hidden';
+    } else {
+      headerTitle.style.visibility = 'visible';
+      const pageTitles = {
+        'vann': '🛒 Vann (Kès)',
+        'pwodwi': '📦 Pwodwi (Katalòg)',
+        'det': '💳 Dèt ak Kredi',
+        'rapò': '📊 Rapò Biznis',
+        'depans': '🧾 Depans Jounen',
+        'commandes': '🛵 Kòmand & Livrezon',
+        'admin': '👑 Seksyon Admin',
+        'param': '⚙️ Paramèt App'
+      };
+      headerTitle.textContent = pageTitles[id] || 'ClairMarché';
+    }
+  }
   
   if (id === 'home') renderHomePage();
   if (id === 'rapò')   { rapòDate = new Date(); rapòDate.setHours(0,0,0,0); renderRapò(); }
