@@ -1,6 +1,16 @@
 {
+  "name": "clair-marche",
+  "version": "1.0.0",
   "type": "module",
+  "scripts": {
+    "build": "echo 'No compilation needed. Web files are in public/'",
+    "cap:sync": "npx cap sync"
+  },
   "dependencies": {
+    "@capacitor/android": "^8.3.4",
+    "@capacitor/cli": "^8.3.4",
+    "@capacitor/core": "^8.3.4",
+    "@capacitor/ios": "^8.3.4",
     "node-fetch": "^3.3.2"
   },
   "engines": {
