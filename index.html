@@ -1800,6 +1800,40 @@ body {
   <div class="splash-sub" id="splash-version">v2.0 · Chajman...</div>
 </div>
 
+<!-- ══ SUSPENDED SCREEN ═══════════════════════════════════════════════════ -->
+<div id="suspended-screen" style="
+  display:none; position:fixed; inset:0; background:#0d0d0d; z-index:99999;
+  flex-direction:column; align-items:center; justify-content:center;
+  padding:32px; text-align:center;
+">
+  <div style="font-size:3.5rem; margin-bottom:16px;">⛔</div>
+  <div style="font-size:1.4rem; font-weight:900; color:#ff3d57; margin-bottom:8px; letter-spacing:-0.5px;">
+    Aksè Sispann
+  </div>
+  <div style="font-size:0.9rem; color:#777; line-height:1.6; max-width:280px; margin-bottom:28px;">
+    Abònman ou a sispann oswa ekspire.<br>Kontakte administratè a pou renouvle aksè ou a.
+  </div>
+  <div id="suspended-device-id" style="
+    font-family:'Space Mono',monospace; font-size:0.75rem; color:#444;
+    background:#161616; border:1px solid #2a2a2a; border-radius:8px;
+    padding:8px 14px; margin-bottom:24px; letter-spacing:1px;
+  ">
+    Kòd Aparèy: ...
+  </div>
+  <a id="suspended-wa-btn" href="#" target="_blank" style="
+    display:flex; align-items:center; gap:10px; justify-content:center;
+    background:#25D366; color:#fff; text-decoration:none; font-weight:700;
+    font-size:0.95rem; padding:14px 28px; border-radius:14px;
+    box-shadow:0 8px 24px rgba(37,211,102,0.35);
+    font-family:'Outfit',sans-serif; transition: transform 0.15s;
+  ">
+    📱 Kontakte sou WhatsApp
+  </a>
+  <div style="font-size:0.7rem; color:#333; margin-top:20px;">
+    ClairMarché POS · Lisans Sispann
+  </div>
+</div>
+
 <!-- ══ PWA INSTALL BANNER ═════════════════════════════════════════════════ -->
 <div class="install-banner" id="install-banner">
   <div class="install-banner-text">
@@ -6283,8 +6317,87 @@ function isLicenseValid() {
   return false;
 }
 
+// ── SHOW SUSPENDED SCREEN ─────────────────────────────────────────────────
+function showSuspendedScreen() {
+  const screen = document.getElementById('suspended-screen');
+  if (!screen) return;
+  // Montre deviceId kliyan an pou li ka ba ou kòd la si li rele ou
+  const deviceLabel = document.getElementById('suspended-device-id');
+  if (deviceLabel) deviceLabel.textContent = 'Kòd Aparèy: ' + deviceId;
+  // Mete lyen WhatsApp la (ba li nimewo WhatsApp ou menm kòm admin)
+  const waBtn = document.getElementById('suspended-wa-btn');
+  if (waBtn) {
+    const msg = encodeURIComponent(
+      `Bonjou, abònman ClairMarché m lan sispann. Kòd aparèy mwen an: ${deviceId}. Mèsi!`
+    );
+    waBtn.href = `https://wa.me/${TRIAL_CONFIG.devWhatsApp}?text=${msg}`;
+  }
+  screen.style.display = 'flex';
+  // Kache tout lòt ekran yo pou kliyan pa ka pase
+  document.querySelectorAll('#app-splash, .page, #trial-wall, nav').forEach(el => {
+    if (el) el.style.display = 'none';
+  });
+}
+
+// ── CHECK LICENSE ONLINE (Vercel API → Supabase) ───────────────────────────
+async function checkLicenseOnline() {
+  // Sèlman tcheke si aparèy la gen yon deviceId valid
+  if (!deviceId) return;
+
+  // Pran dat dènye tchèk lokal la (pou mòd ibrid — 3 jou maks san entènèt)
+  const lastCheck = parseInt(localStorage.getItem('br_last_online_check') || '0', 10);
+  const OFFLINE_GRACE_DAYS = 3;
+  const offlineGraceMs = OFFLINE_GRACE_DAYS * 24 * 60 * 60 * 1000;
+
+  try {
+    const resp = await fetch(
+      `/api/check-license?deviceId=${encodeURIComponent(deviceId)}`,
+      { signal: AbortSignal.timeout(5000) }
+    );
+
+    if (!resp.ok) throw new Error('Sèvè a pa reponn');
+    const data = await resp.json();
+
+    // Sove dat dènye koneksyon reyèsi a
+    localStorage.setItem('br_last_online_check', Date.now().toString());
+
+    if (data.status === 'suspended' || data.status === 'expired') {
+      // Bloke app la imedyatman — kliyan pa ka pase ekran sa a!
+      showSuspendedScreen();
+      return;
+    }
+
+    if (data.status === 'active' && data.plan) {
+      // Mete ajou estati lokal la avèk enfòmasyon sèvè a (plis egzak)
+      licenseState.status = 'active';
+      licenseState.plan = data.plan;
+      if (data.expires_at) {
+        licenseState.expiresAt = new Date(data.expires_at).getTime();
+      }
+      if (typeof saveLicense === 'function') saveLicense();
+    }
+
+  } catch (err) {
+    // Pa gen entènèt oswa sèvè a pa reponn — mòd ibrid
+    const timeSinceLastCheck = Date.now() - lastCheck;
+    if (lastCheck > 0 && timeSinceLastCheck > offlineGraceMs) {
+      // Plis pase 3 jou san koneksyon — bloke pou presosyon
+      // (Sèlman si lisans pa t jamè 'active' lokal)
+      if (licenseState.status !== 'active') {
+        showSuspendedScreen();
+      }
+    }
+    // Sinon: kontinye nòmalman (mòd ibrid aktif)
+    console.warn('[ClairMarché] Mòd ibrid — tchèk lisans pa posib kounye a.');
+  }
+}
+
 // ── INIT LICENSE CHECK ────────────────────────────────────────────────────
-function initLicenseCheck() {
+async function initLicenseCheck() {
+  // 1. Tcheke sèvè a dabò (an silans, async)
+  //    Sa pa bloke UI a — l ap retounen yon rezilta an kèk segonn.
+  checkLicenseOnline(); // Lanse san await pou pa bloke splash screen
+
   const daysLeft = getTrialDaysLeft();
 
   if (licenseState.status === 'active' || licenseState.status === 'cancelled') {
@@ -6512,6 +6625,18 @@ function activateLicense(plan, billing, code) {
   licenseState.maxDevices = TRIAL_CONFIG.plans[plan]?.maxDevices || 1;
 
   saveLicense();
+
+  // ── Anrejistre aktivasyon sa a nan Supabase (an silans) ──
+  const shopNameVal = localStorage.getItem('br_shop_name') || 'Boutique ClairMarché';
+  fetch('/api/activate-license', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      deviceId: deviceId,
+      plan: plan,
+      shopName: shopNameVal
+    })
+  }).catch(() => { /* Silans si pa gen entènèt */ });
 
   // Fèmen paywall
   closePaywall();
