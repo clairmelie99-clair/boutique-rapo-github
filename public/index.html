@@ -1765,6 +1765,9 @@ body {
       <button class="sidebar-link" id="side-admin" onclick="switchPage('admin')">
         <span class="s-icon">👑</span>Administrasyon
       </button>
+      <button class="sidebar-link" id="side-library" onclick="switchPage('library')">
+        <span class="s-icon" style="color: #c084fc;">🎓</span>Libreri Dijital
+      </button>
       <button class="sidebar-link" id="side-param" onclick="switchPage('param')">
         <span class="s-icon">⚙️</span>Paramèt
       </button>
@@ -1980,6 +1983,9 @@ body {
     <button class="home-tile gold" data-page="admin" onclick="openHomeOption('admin')">
       <div class="h-icon">👑</div><div><div class="h-title">Admin</div><div class="h-sub">Caissier ak lisans</div></div>
     </button>
+    <button class="home-tile purple" data-page="library" onclick="openHomeOption('library')" style="border-color: rgba(168, 85, 247, 0.45); background: rgba(168, 85, 247, 0.08);">
+      <div class="h-icon" style="color: #c084fc;">🎓</div><div><div class="h-title" style="color: #e9d5ff;">Libreri</div><div class="h-sub" style="color: #c084fc;">Kou & Pwodwi Dijital</div></div>
+    </button>
     <button class="home-tile blue" onclick="openChatbot()">
       <div class="h-icon">🤖</div><div><div class="h-title">IA</div><div class="h-sub">Asistan rapò</div></div>
     </button>
@@ -2055,7 +2061,23 @@ body {
   <div class="add-prod-form">
     <div class="form-title">➕ Ajoute Nouvo Pwodwi</div>
 
+    <!-- Selekteri glisan Fizik vs Dijital -->
+    <div style="display:flex; background:var(--s3); border:1px solid var(--border); border-radius:10px; padding:3px; margin-bottom:12px; position:relative;">
+      <button type="button" id="toggle-phys" class="toggle-btn active" onclick="setProductType('physical')" style="flex:1; padding:8px; border:none; border-radius:8px; background:var(--gold); color:#000; font-family:'Outfit',sans-serif; font-size:0.78rem; font-weight:800; cursor:pointer; transition:all 0.2s;">📦 Pwodwi Fizik</button>
+      <button type="button" id="toggle-digi" class="toggle-btn" onclick="setProductType('digital')" style="flex:1; padding:8px; border:none; border-radius:8px; background:none; color:var(--white); font-family:'Outfit',sans-serif; font-size:0.78rem; font-weight:700; cursor:pointer; transition:all 0.2s;">🌐 Dijital / Kou</button>
+    </div>
 
+    <!-- Chan Dijital yo (Kache pa defo) -->
+    <div id="digital-fields" style="display:none; flex-direction:column; gap:8px; margin-bottom:12px; background:rgba(167,139,250,0.05); border:1px dashed rgba(167,139,250,0.25); border-radius:10px; padding:12px; transition:all 0.3s ease-in-out;">
+      <div class="field">
+        <label style="color:#a78bfa; font-weight:700; font-size:0.72rem; margin-bottom:4px; display:block;">🔗 Lyen Aksè (Google Drive, WhatsApp, Zoom...)</label>
+        <input type="text" id="new-access-link" placeholder="https://..." style="background:#0d0d0d; border:1px solid #2a2a2a; border-radius:8px; padding:8px 12px; color:#fff; font-size:0.82rem; width:100%; box-sizing:border-box;">
+      </div>
+      <div class="field" style="margin-top:6px;">
+        <label style="color:#a78bfa; font-weight:700; font-size:0.72rem; margin-bottom:4px; display:block;">📝 Mesaj Livrezon (WhatsApp / Resi)</label>
+        <textarea id="new-delivery-msg" placeholder="Mèsi pou konfyans ou! Men lyen pou w kòmanse..." style="background:#0d0d0d; border:1px solid #2a2a2a; border-radius:8px; padding:8px 12px; color:#fff; font-size:0.82rem; width:100%; height:60px; font-family:'Outfit',sans-serif; resize:none; box-sizing:border-box;"></textarea>
+      </div>
+    </div>
 
     <!-- Image Uploader -->
     <input type="file" id="new-image-file" accept="image/*" style="display:none;" onchange="handleProductImageUpload(event)">
@@ -2526,6 +2548,48 @@ body {
   </div>
 </div>
 
+<!-- ══ PAGE: LIBRERI DIJITAL ══════════════════════════════════════════════ -->
+<div class="page" id="page-library" style="background: linear-gradient(135deg, rgba(15, 10, 25, 0.98), rgba(20, 15, 35, 0.99));">
+  <div class="topbar" style="background: rgba(15, 10, 25, 0.85); backdrop-filter: blur(15px); border-bottom: 1px solid rgba(168, 85, 247, 0.25);">
+    <div class="topbar-title" style="color: #c084fc;">🎓 <span>Libreri Dijital</span></div>
+  </div>
+
+  <div style="max-width: 500px; margin: 0 auto; padding-top: 15px;">
+    <!-- Search Glassmorphic Card -->
+    <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 16px; padding: 22px; box-shadow: 0 8px 32px rgba(168, 85, 247, 0.15); backdrop-filter: blur(12px); margin-bottom: 24px;">
+      <h3 style="color: #e9d5ff; font-size: 1.15rem; font-weight: 800; margin-bottom: 8px; text-align: center;">Rechèch Achte Kou</h3>
+      <p style="color: #c084fc; font-size: 0.82rem; text-align: center; margin-bottom: 18px; line-height: 1.4;">Antre nimewo telefòn ou te bay lè ou t ap achte a pou n ka jwenn tout kou ou yo.</p>
+      
+      <div style="margin-bottom: 16px;">
+        <input 
+          type="tel" 
+          id="library-phone-input" 
+          placeholder="Egzanp: +50937010203" 
+          style="width: 100%; background: rgba(0,0,0,0.45); border: 1px solid rgba(168, 85, 247, 0.4); border-radius: 12px; padding: 14px; color: #fff; font-family: 'Outfit', sans-serif; font-size: 1.1rem; text-align: center; outline: none; transition: all 0.3s;"
+          onfocus="this.style.borderColor='#c084fc'; this.style.boxShadow='0 0 10px rgba(168,85,247,0.3)';"
+          onblur="this.style.borderColor='rgba(168, 85, 247, 0.4)'; this.style.boxShadow='none';">
+      </div>
+      
+      <button 
+        onclick="searchStudentLibrary()" 
+        style="width: 100%; background: linear-gradient(135deg, #a855f7, #7c3aed); border: none; color: white; padding: 14px; font-weight: 700; font-family: 'Outfit', sans-serif; font-size: 1rem; border-radius: 12px; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3);"
+        onmouseover="this.style.opacity='0.9'; this.style.transform='translateY(-1px)';"
+        onmouseout="this.style.opacity='1'; this.style.transform='translateY(0)';"
+        onfocus="this.style.outline='none';">
+        🔍 Chaje Libreri Mwen
+      </button>
+    </div>
+
+    <!-- Results Display -->
+    <div id="library-results-container">
+      <div style="text-align: center; padding: 40px 20px; color: #777;">
+        <div style="font-size: 3rem; margin-bottom: 12px;">📖</div>
+        <div style="font-size: 0.9rem; font-weight: 600; color: #aaa;">Antre nimewo telefòn ou anwo a pou wè lis kou yo.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ══ PAGE: PARAMÈT ══════════════════════════════════════════════════════ -->
 <div class="page" id="page-param">
   <div class="topbar">
@@ -2830,6 +2894,28 @@ body {
   </div>
 </div>
 
+<!-- ══ DIGITAL DELIVERY MODAL ════════════════════════════════════════════ -->
+<div class="modal-overlay" id="digital-delivery-modal" style="z-index: 2000;">
+  <div class="modal" style="border: 2px solid #a855f7; box-shadow: 0 0 25px rgba(168, 85, 247, 0.45); background: rgba(15, 10, 25, 0.96); backdrop-filter: blur(15px); max-height: 85vh; overflow-y: auto;">
+    <div class="modal-handle" style="background: #a855f7;"></div>
+    <div class="modal-title" style="color: #c084fc; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 8px;">
+      🎓<span>LIVREZON DIJITAL IMEDYA</span>
+    </div>
+    
+    <div style="text-align: center; margin-bottom: 20px;">
+      <p style="color: #e9d5ff; font-size: 0.9rem; line-height: 1.4;">Vant lan fèt avèk siksè! Klike sou bouton yo pou kopye lyen yo oswa voye yo enstantaneman bay elèv/kliyan an.</p>
+    </div>
+
+    <div id="digital-delivery-list" style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 20px;">
+      <!-- Filled by JS -->
+    </div>
+
+    <button class="confirm-btn" onclick="closeDigitalDelivery()" style="background: linear-gradient(135deg, #a855f7, #7c3aed); border: none; color: white; padding: 14px; font-weight: 700; width: 100%; border-radius: 12px; cursor: pointer; transition: all 0.3s;">
+      ✓ Dakò, Fèmen
+    </button>
+  </div>
+</div>
+
 <!-- ══ CART BAR ════════════════════════════════════════════════════════════ -->
 <div class="cart-bar" id="cart-bar" onclick="openCheckout()">
   <div class="cart-bar-left">
@@ -2874,6 +2960,17 @@ body {
         id="kredi-client-name" 
         placeholder="Antre non kliyan an..."
         style="width:100%; background:var(--s2); border:1px solid var(--border); border-radius:10px; padding:12px; color:var(--white); font-family:'Outfit',sans-serif; font-size:0.9rem; outline:none;">
+    </div>
+
+    <div id="digital-client-box" style="display:none; margin-bottom:16px;">
+      <div class="peman-title" style="color: #c084fc;">📱 Nimewo Telefòn Kliyan (Pou Aksè / WhatsApp)</div>
+      <input 
+        type="tel" 
+        id="digital-client-phone" 
+        placeholder="Egzanp: +50937010203"
+        style="width:100%; background:var(--s2); border:1px solid #a855f7; border-radius:10px; padding:12px; color:var(--white); font-family:'Outfit',sans-serif; font-size:0.9rem; outline:none; transition: all 0.3s;"
+        onfocus="this.style.borderColor='#c084fc'; this.style.boxShadow='0 0 8px rgba(168,85,247,0.3)';"
+        onblur="this.style.borderColor='#a855f7'; this.style.boxShadow='none';">
     </div>
 
     <div class="summary-box" id="modal-summary"></div>
@@ -3273,6 +3370,47 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ── IMAGE UPLOAD ──────────────────────────────────────────────────────────
 let uploadedProductImage = '';
+let selectedProductType = 'physical';
+
+function setProductType(type) {
+  selectedProductType = type;
+  const btnPhys = document.getElementById('toggle-phys');
+  const btnDigi = document.getElementById('toggle-digi');
+  const digiFields = document.getElementById('digital-fields');
+  
+  if (!btnPhys || !btnDigi || !digiFields) return;
+  
+  if (type === 'digital') {
+    btnPhys.style.background = 'none';
+    btnPhys.style.color = 'var(--white)';
+    btnPhys.style.fontWeight = '700';
+    
+    btnDigi.style.background = 'var(--gold)';
+    btnDigi.style.color = '#000';
+    btnDigi.style.fontWeight = '800';
+    
+    digiFields.style.display = 'flex';
+    
+    // Automatically force stock to Unlimited in UI
+    document.getElementById('new-stock').value = '999';
+    document.getElementById('new-stock').disabled = true;
+    document.getElementById('new-stock').style.opacity = '0.5';
+  } else {
+    btnPhys.style.background = 'var(--gold)';
+    btnPhys.style.color = '#000';
+    btnPhys.style.fontWeight = '800';
+    
+    btnDigi.style.background = 'none';
+    btnDigi.style.color = 'var(--white)';
+    btnDigi.style.fontWeight = '700';
+    
+    digiFields.style.display = 'none';
+    
+    document.getElementById('new-stock').value = '';
+    document.getElementById('new-stock').disabled = false;
+    document.getElementById('new-stock').style.opacity = '1';
+  }
+}
 
 function handleProductImageUpload(event) {
   const file = event.target.files[0];
@@ -3375,7 +3513,7 @@ function renderProducts() {
       ${p.image ? `<img src="${p.image}" class="prod-img" style="width:40px; height:40px; border-radius:50%; object-fit:cover; margin-bottom:8px;">` : `<div style="width:40px; height:40px; border-radius:50%; background:var(--s3); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:1.2rem; font-weight:800; color:var(--gold); margin-bottom:8px; text-transform:uppercase;">${p.name.charAt(0)}</div>`}
       <div class="prod-name">${p.name}</div>
       <div class="prod-price">${p.price.toLocaleString('fr-HT')} HTG</div>
-      <div class="prod-cat-tag">${p.cat}</div>
+      ${p.isDigital ? `<div style="font-size:0.62rem; color:#a78bfa; font-weight:800; background:rgba(167,139,250,0.12); border:1px solid rgba(167,139,250,0.2); border-radius:4px; padding:2px 6px; display:inline-block; margin-top:4px;">🌐 DIJITAL / KOU</div>` : `<div class="prod-cat-tag">${p.cat}</div>`}
       ${stockHtml}
     </div>`;
   }).join('');
@@ -3419,6 +3557,21 @@ function updateCartBar() {
 function openCheckout() {
   renderModalCart();
   renderModalSummary();
+  
+  // Detekte pwodwi dijital nan panyen an
+  const hasDigital = Object.keys(cart).some(k => {
+    if (cart[k] <= 0) return false;
+    const p = products.find(prod => prod.id == k);
+    return p && p.isDigital;
+  });
+  
+  const phoneBox = document.getElementById('digital-client-box');
+  const phoneInput = document.getElementById('digital-client-phone');
+  if (phoneInput) phoneInput.value = '';
+  if (phoneBox) {
+    phoneBox.style.display = hasDigital ? 'block' : 'none';
+  }
+  
   document.getElementById('checkout-modal').classList.add('open');
 }
 
@@ -3547,6 +3700,21 @@ if (selectedPeman === 'Kredi') {
   }
 }
 
+  // Tcheke si gen pwodwi dijital e valide nimewo telefòn
+  let clientPhone = '';
+  const hasDigital = ids.some(k => {
+    const p = products.find(prod => prod.id == k);
+    return p && p.isDigital;
+  });
+
+  if (hasDigital) {
+    clientPhone = document.getElementById('digital-client-phone').value.trim();
+    if (!clientPhone) {
+      showToast('⚠️ Nimewo telefòn obligatwa pou voye lyen aksè kou a!');
+      return;
+    }
+  }
+
   const items = ids.map(k => {
     const p = products.find(p => p.id == k);
     const cost = costPrices[p.id] || 0;
@@ -3560,7 +3728,10 @@ if (selectedPeman === 'Kredi') {
       price: p.price,
       cost,
       total: p.price * qty,
-      profit: (p.price - cost) * qty
+      profit: (p.price - cost) * qty,
+      isDigital: p.isDigital || false,
+      accessLink: p.accessLink || '',
+      deliveryMsg: p.deliveryMsg || ''
     };
   });
 
@@ -3586,6 +3757,7 @@ if (selectedPeman === 'Kredi') {
     pwòfi: totalProfitProducts - totalDep,
     peman: selectedPeman,
     krediClientName,
+    clientPhone: clientPhone || '', // Sove nimewo telefòn kliyan an
   };
 
   // Retire kantite ki vann yo nan stock pwodwi yo
@@ -3616,6 +3788,25 @@ if (selectedPeman === 'Kredi') {
   transactions.push(tx);
   saveData();
 
+  // Senkronizasyon sou nwaj (Supabase/Vercel) an silans pou pwodwi dijital
+  if (hasDigital) {
+    items.filter(i => i.isDigital).forEach(item => {
+      fetch(API_BASE_URL + '/api/digital-purchases', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone: clientPhone,
+          productName: item.name,
+          accessLink: item.accessLink,
+          deliveryMsg: item.deliveryMsg,
+          shopName: shopInfo.name || 'ClairMarché POS',
+          txId: tx.id,
+          date: tx.date + ' ' + tx.time
+        })
+      }).catch(err => console.error('Erè synchro nwaj:', err));
+    });
+  }
+
   // Reset cart
   cart = {};
   document.getElementById('depans-rows').innerHTML = `
@@ -3633,6 +3824,13 @@ if (selectedPeman === 'Kredi') {
   renderAdminPage();
   closeCheckout();
   showResi(tx);
+
+  // Louvri modal livrezon imedya si gen pwodwi dijital
+  if (hasDigital) {
+    setTimeout(() => {
+      showDigitalDelivery(tx);
+    }, 600);
+  }
 }
 
 // ── RAPÒ ───────────────────────────────────────────────────────────────────
@@ -3787,16 +3985,23 @@ function addProduct() {
     showToast('⚠️ Ranpli Non ak Pri!'); return;
   }
 
+  const isDigital = selectedProductType === 'digital';
+  const accessLink = isDigital ? document.getElementById('new-access-link').value.trim() : '';
+  const deliveryMsg = isDigital ? document.getElementById('new-delivery-msg').value.trim() : '';
+
   const newProd = {
     id: Date.now(),
     name, 
     image: image || undefined, 
     price, 
-    cat: cat || 'Lòt', 
-    stock
+    cat: cat || (isDigital ? 'Dijital' : 'Lòt'), 
+    stock: isDigital ? 999 : stock,
+    isDigital,
+    accessLink: accessLink || undefined,
+    deliveryMsg: deliveryMsg || undefined
   };
 
-  newProd.cat = cat || "";
+  newProd.cat = cat || (isDigital ? 'Dijital' : "");
 
   products.push(newProd);
   saveData();
@@ -3807,7 +4012,13 @@ function addProduct() {
   document.getElementById('new-stock').value = '';
   document.getElementById('new-cat').value = ''; // Reset select to blank
   
+  if (isDigital) {
+    document.getElementById('new-access-link').value = '';
+    document.getElementById('new-delivery-msg').value = '';
+  }
+  
   clearProductImage();
+  setProductType('physical'); // Reset selector back to physical
 
   renderProdMgmt();
   renderCategories();
@@ -3926,7 +4137,10 @@ function duplicateProduct(id) {
     image: prod.image || undefined,
     price: prod.price,
     cat: prod.cat,
-    stock: prod.stock === 999 ? 999 : 0
+    stock: prod.stock === 999 ? 999 : 0,
+    isDigital: prod.isDigital || false,
+    accessLink: prod.accessLink || undefined,
+    deliveryMsg: prod.deliveryMsg || undefined
   };
 
   products.push(copy);
@@ -3990,7 +4204,10 @@ function renderProdMgmt() {
           <div class="prod-mgmt-item" style="${p.stock !== 999 && p.stock <= 5 ? 'border-left:3px solid var(--red);' : ''}">
             <div class="pm-emoji">${p.image ? `<img src="${p.image}" style="width:28px; height:28px; border-radius:50%; object-fit:cover;">` : `<div style="width:28px; height:28px; border-radius:50%; background:var(--s3); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:0.8rem; font-weight:800; color:var(--gold); text-transform:uppercase;">${p.name.charAt(0)}</div>`}</div>
             <div class="pm-info">
-              <div class="pm-name">${p.name}</div>
+              <div class="pm-name" style="display:flex; align-items:center; gap:6px;">
+                ${p.name}
+                ${p.isDigital ? `<span style="font-size:0.58rem; color:#a78bfa; font-weight:800; background:rgba(167,139,250,0.12); border:1px solid rgba(167,139,250,0.2); border-radius:3px; padding:1px 4px;">🌐 DIJITAL</span>` : ''}
+              </div>
               <div class="pm-detail">
                 ${p.price.toLocaleString('fr-HT')} HTG · ${p.cat} · 
                 <span style="color:${stockColor};font-weight:700">Stock: ${stockText}</span>
@@ -4193,6 +4410,7 @@ function cashierCanUseOrders() {
 
 function canAccessPage(id) {
   if (id === 'home') return true;
+  if (id === 'library') return true; // Libreri a toujou disponib
   if (id === 'admin') return true; // Toujou montre bouton Admin an pou pèmèt Cashier chanje wòl ak PIN
   if (!isCashierOnly()) return true;
   if (id === 'vann' || id === 'rapò') return true;
@@ -5329,8 +5547,19 @@ function closeResi() {
 function resiWhatsApp() {
   if (!lastTx) return;
   const resiNum = 'BR-' + String(lastTx.id).slice(-6);
-  const lines = lastTx.items.map(i=>`  ${i.emoji} ${i.name} ×${i.qty}: ${i.total.toLocaleString('fr-HT')} HTG`).join('%0a');
-  const msg = `🧾 *RESI ${shopInfo.name||'Ma Boutique'}*%0a#${resiNum}%0a——%0a${lines}%0a——%0a💰 *TOTAL: ${lastTx.totalVant.toLocaleString('fr-HT')} HTG*%0a💳 ${lastTx.peman}%0a%0a${shopInfo.tel?'📞 '+shopInfo.tel+'%0a':''}${shopInfo.msg||'Mèsi pou konfyans ou!'}`;
+  const lines = lastTx.items.map(i=>`  ${i.emoji || '🌐'} ${i.name} ×${i.qty}: ${i.total.toLocaleString('fr-HT')} HTG`).join('%0a');
+  
+  // Detekte atik dijital yo pou yo ka ajoute nan mesaj la
+  const digitalItems = lastTx.items.filter(i => i.isDigital);
+  let digitalSection = '';
+  if (digitalItems.length > 0) {
+    digitalSection = '%0a%0a🎓 *AKSÈ AK KOU DIJITAL OU YO*%0a----------------------------';
+    digitalItems.forEach(i => {
+      digitalSection += `%0a🚀 *Kou:* ${i.name}%0a🔑 *Lyen Aksè:* ${i.accessLink || 'N/A'}%0a📝 *Enstriksyon:* ${i.deliveryMsg || 'N/A'}%0a`;
+    });
+  }
+
+  const msg = `🧾 *RESI ${shopInfo.name||'Ma Boutique'}*%0a#${resiNum}%0a——%0a${lines}%0a——%0a💰 *TOTAL: ${lastTx.totalVant.toLocaleString('fr-HT')} HTG*%0a💳 ${lastTx.peman}%0a%0a${shopInfo.tel?'📞 '+shopInfo.tel+'%0a':''}${shopInfo.msg||'Mèsi pou konfyans ou!'}${digitalSection}`;
   window.open(`https://wa.me/?text=${msg}`, '_blank');
 }
 
@@ -5874,9 +6103,23 @@ function switchPage(id, btn) {
         'depans': '🧾 Depans Jounen',
         'commandes': '🛵 Kòmand & Livrezon',
         'admin': '👑 Seksyon Admin',
-        'param': '⚙️ Paramèt App'
+        'param': '⚙️ Paramèt App',
+        'library': '🎓 Libreri Kliyan & Kou'
       };
       headerTitle.textContent = pageTitles[id] || 'ClairMarché';
+    }
+  }
+  
+  if (id === 'library') {
+    const phoneInput = document.getElementById('library-phone-input');
+    if (phoneInput) phoneInput.value = '';
+    const container = document.getElementById('library-results-container');
+    if (container) {
+      container.innerHTML = `
+        <div style="text-align: center; padding: 40px 20px; color: #777;">
+          <div style="font-size: 3rem; margin-bottom: 12px;">📖</div>
+          <div style="font-size: 0.9rem; font-weight: 600; color: #aaa;">Antre nimewo telefòn ou anwo a pou wè lis kou yo.</div>
+        </div>`;
     }
   }
   
@@ -6839,6 +7082,171 @@ function restorePreviousDeviceId() {
     setCookie('br_device_id', cleaned);
     window.location.reload();
   }
+}
+
+// ── DIGITAL DELIVERY HELPER FUNCTIONS ──────────────────────────────────────
+function showDigitalDelivery(tx) {
+  const listEl = document.getElementById('digital-delivery-list');
+  if (!listEl) return;
+  const digitalItems = tx.items.filter(i => i.isDigital);
+  const phone = tx.clientPhone || '';
+  
+  listEl.innerHTML = digitalItems.map(i => `
+    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(168,85,247,0.25); border-radius: 12px; padding: 16px;">
+      <div style="color:#c084fc; font-weight:700; font-size:1rem; margin-bottom:10px; display:flex; align-items:center; gap:6px;">
+        🌐 ${i.name}
+      </div>
+      
+      <div style="margin-bottom:8px;">
+        <span style="font-size:0.75rem; color:#c084fc; display:block; margin-bottom:4px;">🔗 Lyen Aksè:</span>
+        <div style="display:flex; gap:6px;">
+          <input type="text" readonly value="${i.accessLink || ''}" style="flex:1; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); border-radius:6px; color:#fff; font-size:0.8rem; padding:6px 8px; outline:none;">
+          <button onclick="navigator.clipboard.writeText('${i.accessLink||''}'); showToast('Kopye!')" style="background:#581c87; border:none; color:#e9d5ff; padding:6px 12px; border-radius:6px; font-size:0.75rem; cursor:pointer; font-weight:600;">📋 Kopye</button>
+          ${i.accessLink ? `<button onclick="window.open('${i.accessLink}', '_blank')" style="background:#701a75; border:none; color:#fdf2f8; padding:6px 12px; border-radius:6px; font-size:0.75rem; cursor:pointer; font-weight:600;">🚀 Ouvri</button>` : ''}
+        </div>
+      </div>
+      
+      <div style="margin-bottom:12px;">
+        <span style="font-size:0.75rem; color:#c084fc; display:block; margin-bottom:4px;">Mesaj Livrezon / Enstriksyon:</span>
+        <textarea readonly style="width:100%; height:50px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); border-radius:6px; color:#ccc; font-size:0.75rem; padding:6px; resize:none; outline:none; font-family:sans-serif; margin-bottom: 4px;">${i.deliveryMsg || ''}</textarea>
+        <button onclick="navigator.clipboard.writeText('${i.deliveryMsg||''}'); showToast('Kopye!')" style="background:#581c87; border:none; color:#e9d5ff; padding:4px 10px; border-radius:6px; font-size:0.7rem; cursor:pointer; font-weight:600;">📋 Kopye Mesaj la</button>
+      </div>
+
+      ${phone ? `
+        <button onclick="sendSingleDigitalWA('${phone}', '${i.name}', '${i.accessLink || ''}', '${i.deliveryMsg || ''}')" style="width:100%; background:#25d366; border:none; color:white; padding:12px; border-radius:8px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; font-size:0.85rem; box-shadow: 0 4px 12px rgba(37,211,102,0.25);">
+          💬 Voye bay Kliyan sou WhatsApp
+        </button>
+      ` : ''}
+    </div>
+  `).join('');
+
+  document.getElementById('digital-delivery-modal').classList.add('open');
+}
+
+function sendSingleDigitalWA(phone, prodName, link, msg) {
+  const cleanPhone = phone.replace(/[^0-9]/g, '');
+  const text = `🎓 *LIVREZON DIJITAL / KOU YO*%0a----------------------------%0a🚀 *Kou:* ${prodName}%0a🔑 *Lyen Aksè:* ${link}%0a📝 *Enstriksyon:* ${msg}%0a%0aMèsi pou acha w la!`;
+  window.open(`https://wa.me/${cleanPhone}?text=${text}`, '_blank');
+}
+
+function closeDigitalDelivery() {
+  document.getElementById('digital-delivery-modal').classList.remove('open');
+}
+
+async function searchStudentLibrary() {
+  const phoneInput = document.getElementById('library-phone-input');
+  if (!phoneInput) return;
+  const phone = phoneInput.value.trim();
+  if (!phone) {
+    showToast('⚠️ Antre nimewo telefòn ou!');
+    return;
+  }
+
+  const container = document.getElementById('library-results-container');
+  if (!container) return;
+  
+  container.innerHTML = `
+    <style>
+      @keyframes librarySpin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
+    <div style="text-align:center; padding:50px 20px;">
+      <div style="border: 4px solid rgba(168,85,247,0.1); border-left-color: #c084fc; width: 36px; height: 36px; border-radius: 50%; animation: librarySpin 1s linear infinite; margin: 0 auto 16px;"></div>
+      <div style="color:#c084fc; font-size:0.9rem; font-weight:600;">Ap chache kou ou yo sou nwaj la...</div>
+    </div>`;
+
+  let allPurchases = [];
+
+  // 1. Chache nan lokal (transactions lokal)
+  const cleanPhone = phone.replace(/[^0-9]/g, '');
+  if (transactions && transactions.length > 0) {
+    transactions.forEach(tx => {
+      const cleanTxPhone = (tx.clientPhone || '').replace(/[^0-9]/g, '');
+      if (cleanTxPhone && (cleanTxPhone.endsWith(cleanPhone) || cleanPhone.endsWith(cleanTxPhone))) {
+        tx.items.forEach(item => {
+          if (item.isDigital) {
+            allPurchases.push({
+              productName: item.name,
+              accessLink: item.accessLink || '',
+              deliveryMsg: item.deliveryMsg || '',
+              shopName: shopInfo.name || 'ClairMarché POS',
+              date: tx.date + ' ' + tx.time,
+              txId: tx.id
+            });
+          }
+        });
+      }
+    });
+  }
+
+  // 2. Chache nan API a (Supabase + Cloud fallback)
+  try {
+    const res = await fetch(API_BASE_URL + '/api/digital-purchases?phone=' + encodeURIComponent(phone));
+    if (res.ok) {
+      const data = await res.json();
+      if (data.purchases && data.purchases.length > 0) {
+        data.purchases.forEach(p => {
+          const exists = allPurchases.some(x => String(x.txId) === String(p.txId) && x.productName === p.productName);
+          if (!exists) {
+            allPurchases.push(p);
+          }
+        });
+      }
+    }
+  } catch (err) {
+    console.error('Error fetching online purchases:', err);
+  }
+
+  // 3. Afiche rezilta yo
+  if (allPurchases.length === 0) {
+    container.innerHTML = `
+      <div style="background:rgba(255,61,87,0.05); border:1px solid rgba(255,61,87,0.2); border-radius:16px; padding:30px; text-align:center;">
+        <div style="font-size:3rem; margin-bottom:12px;">🔍❌</div>
+        <h4 style="color:#ff3d57; font-weight:800; margin-bottom:6px;">Pa gen okenn kou ki jwenn</h4>
+        <p style="color:#aaa; font-size:0.82rem; line-height: 1.4;">Nou pa jwenn okenn kou ki achte ak nimewo telefòn sa a: <strong>${phone}</strong>. Verifye nimewo a oswa kontakte sipò.</p>
+      </div>`;
+    return;
+  }
+
+  // Zòdone pa dat (pi resan an premye)
+  allPurchases.sort((a,b) => {
+    const dateA = new Date(a.date.replace(/-/g, '/'));
+    const dateB = new Date(b.date.replace(/-/g, '/'));
+    return dateB - dateA;
+  });
+
+  container.innerHTML = allPurchases.map(p => `
+    <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(168, 85, 247, 0.2); border-radius: 16px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); backdrop-filter: blur(10px); margin-bottom: 16px; position: relative; overflow: hidden; text-align: left;">
+      <div style="position: absolute; top: -20px; right: -20px; width: 60px; height: 60px; background: rgba(168, 85, 247, 0.2); filter: blur(20px); border-radius: 50%;"></div>
+      
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+        <span style="background: rgba(168, 85, 247, 0.15); color: #c084fc; font-size: 0.68rem; font-weight: 800; padding: 4px 10px; border-radius: 99px; border: 1px solid rgba(168, 85, 247, 0.3);">🌐 DIJITAL</span>
+        <span style="color: #777; font-size: 0.72rem; font-family:'Space Mono',monospace;">${p.date ? p.date.substring(0, 10) : ''}</span>
+      </div>
+
+      <h4 style="color: #fff; font-size: 1.15rem; font-weight: 800; margin-bottom: 4px; line-height: 1.3;">${p.productName}</h4>
+      <div style="color: #c084fc; font-size: 0.78rem; font-weight: 600; margin-bottom: 16px; display:flex; align-items:center; gap:4px;">
+        🏫 Machann: <span>${p.shopName || 'ClairMarché'}</span>
+      </div>
+
+      <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px; padding: 12px; margin-bottom: 16px;">
+        <span style="font-size: 0.72rem; color: #c084fc; font-weight: 700; display: block; margin-bottom: 4px;">📝 Mesaj Livrezon / Enstriksyon:</span>
+        <p style="color: #ccc; font-size: 0.8rem; margin: 0; line-height: 1.45; white-space: pre-wrap;">${p.deliveryMsg || 'Pa gen enstriksyon adisyonèl.'}</p>
+      </div>
+
+      ${p.accessLink ? `
+        <a href="${p.accessLink}" target="_blank" style="display: block; text-align: center; background: linear-gradient(135deg, #a855f7, #7c3aed); border: none; color: white; padding: 12px; font-weight: 700; font-family: 'Outfit', sans-serif; font-size: 0.9rem; border-radius: 10px; cursor: pointer; text-decoration: none; transition: all 0.3s; box-shadow: 0 4px 12px rgba(168, 85, 247, 0.2);"
+           onmouseover="this.style.opacity='0.9'"
+           onmouseout="this.style.opacity='1'">
+          🚀 Ouvri Kou / Paj Aksè
+        </a>
+      ` : `
+        <div style="text-align: center; color: #777; font-size: 0.8rem; font-style: italic; padding: 8px;">Pa gen lyen aksè dirèk (Tcheke enstriksyon yo anwo a)</div>
+      `}
+    </div>
+  `).join('');
 }
 
 // ── AUTO INIT ─────────────────────────────────────────────────────────────
