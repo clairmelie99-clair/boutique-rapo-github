@@ -1720,6 +1720,7 @@ body {
 }
 
 </style>
+<script src="capacitor.js"></script>
 </head>
 <body>
 
@@ -2922,7 +2923,10 @@ body {
 
 <script>
 // ── ENVIRONMENT & API CONFIG ───────────────────────────────────────────────
-const isCapacitor = !!window.Capacitor;
+const isCapacitor = !!window.Capacitor || 
+                    window.location.protocol === 'capacitor:' || 
+                    (window.location.hostname === 'localhost' && !window.location.port) ||
+                    (window.location.hostname === '127.0.0.1' && !window.location.port);
 const API_BASE_URL = isCapacitor ? 'https://boutique-rapo-github.vercel.app' : '';
 
 // ── STATE ──────────────────────────────────────────────────────────────────
