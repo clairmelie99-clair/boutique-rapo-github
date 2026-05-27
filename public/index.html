@@ -2921,6 +2921,10 @@ body {
 <div class="toast" id="toast"></div>
 
 <script>
+// ── ENVIRONMENT & API CONFIG ───────────────────────────────────────────────
+const isCapacitor = !!window.Capacitor;
+const API_BASE_URL = isCapacitor ? 'https://boutique-rapo-github.vercel.app' : '';
+
 // ── STATE ──────────────────────────────────────────────────────────────────
 let appPin = localStorage.getItem('br_pin') || '1234';
 let adminPin = localStorage.getItem('br_admin_pin') || appPin;
@@ -4396,7 +4400,7 @@ function initOrdersPage() {
   renderOrders();
 }
 
-const ONLINE_ORDERS_API = '/api/orders';
+const ONLINE_ORDERS_API = API_BASE_URL + '/api/orders';
 
 function canUseOnlineOrderApi() {
   return location.protocol === 'http:' || location.protocol === 'https:';
@@ -4829,7 +4833,7 @@ function renderCashierSummary() {
 let shopInfo = JSON.parse(localStorage.getItem('br_shop') || '{"name":"Ma Boutique","tel":"","addr":"","msg":"Mèsi pou konfyans ou!"}');
 let registeredShops = JSON.parse(localStorage.getItem('br_registered_shops') || '[]');
 let onlineShopSyncMode = 'local';
-const ONLINE_SHOPS_API = '/api/shops';
+const ONLINE_SHOPS_API = API_BASE_URL + '/api/shops';
 let localTestMode = localStorage.getItem('br_local_test_mode') === 'yes';
 let localTestShopId = localStorage.getItem('br_local_test_shop_id') || '';
 let appVersion = localStorage.getItem('br_version') || '2.0.0';
@@ -6062,7 +6066,7 @@ KONSÈY: Ba repons ki dirèk, pratik, ak konpreyansib pou yon ti komèsan ayisye
   ];
 
   // Call Secure Serverless AI Proxy
-  const ONLINE_CHAT_API = '/api/chat';
+  const ONLINE_CHAT_API = API_BASE_URL + '/api/chat';
   fetch(ONLINE_CHAT_API, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -6381,7 +6385,7 @@ async function checkLicenseOnline() {
     const timeoutId = setTimeout(() => controller.abort(), 6000);
 
     const resp = await fetch(
-      `/api/check-license?deviceId=${encodeURIComponent(deviceId)}`,
+      API_BASE_URL + `/api/check-license?deviceId=${encodeURIComponent(deviceId)}`,
       { signal: controller.signal }
     );
     clearTimeout(timeoutId);
@@ -6660,7 +6664,7 @@ function activateLicense(plan, billing, code) {
 
   // ── Anrejistre aktivasyon sa a nan Supabase (an silans) ──
   const shopNameVal = localStorage.getItem('br_shop_name') || 'Boutique ClairMarché';
-  fetch('/api/activate-license', {
+  fetch(API_BASE_URL + '/api/activate-license', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
