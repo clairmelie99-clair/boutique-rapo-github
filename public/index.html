@@ -1705,7 +1705,7 @@ body {
 
 /* Trial top banner */
 .trial-banner {
-  position: fixed; top: 0; left: 50%; transform: translateX(-50%);
+  position: fixed; top: calc(56px + env(safe-area-inset-top)); left: 50%; transform: translateX(-50%);
   width: 100%; max-width: 480px; z-index: 90;
   background: linear-gradient(90deg, rgba(255,61,87,0.97), rgba(255,109,0,0.97));
   padding: 8px 16px; display: none;
@@ -2056,7 +2056,19 @@ body {
     <div class="form-title">➕ Ajoute Nouvo Pwodwi</div>
 
     <div class="emoji-picker" id="emoji-picker"></div>
-    <input type="hidden" id="new-emoji" value="📦">
+    <input type="hidden" id="new-emoji" value="">
+
+    <!-- Image Uploader -->
+    <input type="file" id="new-image-file" accept="image/*" style="display:none;" onchange="handleProductImageUpload(event)">
+    <div style="display:flex; gap:8px; margin-bottom:12px; align-items:center;">
+      <button type="button" class="param-btn" style="flex:1; margin-bottom:0; background:rgba(245,197,66,0.08); border:1px solid rgba(245,197,66,0.2); color:var(--gold); font-size:0.75rem; font-weight:700;" onclick="document.getElementById('new-image-file').click()">
+        🖼️ Chwazi Imaj kòm Ikòn
+      </button>
+      <div id="new-image-preview" style="display:none; width:36px; height:36px; border-radius:50%; border:2px solid var(--gold); overflow:hidden;">
+        <img id="img-preview" src="" style="width:100%; height:100%; object-fit:cover;">
+      </div>
+      <button type="button" id="clear-image-btn" style="display:none; background:none; border:none; color:var(--red); font-size:1.1rem; cursor:pointer;" onclick="clearProductImage()" title="Retire imaj la">✕</button>
+    </div>
 
     <div class="field-row">
       <div class="field" style="flex:2">
@@ -2073,6 +2085,7 @@ body {
       <div class="field">
         <label>Kategori</label>
         <select id="new-cat">
+          <option value="" selected>-- Chwazi Kategori --</option>
           <option value="Manje">🍽 Manje</option>
           <option value="Bwason">🥤 Bwason</option>
           <option value="Rad">👕 Rad</option>
@@ -3260,20 +3273,60 @@ document.addEventListener('DOMContentLoaded', () => {
   applyRoleAccess();
 });
 
-// ── EMOJI PICKER ───────────────────────────────────────────────────────────
+// ── EMOJI PICKER & IMAGE UPLOAD ──────────────────────────────────────────
 const EMOJIS = ['📦','🍎','🥤','🍞','🧼','📱','👕','🫙','🍬','🥫','💧','🍚','🥩','🐟','🧴','🔋','🕯','🍫','🧃','🌿'];
+let uploadedProductImage = '';
 
 function buildEmojiPicker() {
   const el = document.getElementById('emoji-picker');
-  el.innerHTML = EMOJIS.map((e,i) =>
-    `<div class="ep-btn${i===0?' selected':''}" onclick="selectEmoji(this,'${e}')">${e}</div>`
+  el.innerHTML = EMOJIS.map(e =>
+    `<div class="ep-btn" onclick="selectEmoji(this,'${e}')">${e}</div>`
   ).join('');
 }
 
 function selectEmoji(btn, e) {
-  document.querySelectorAll('.ep-btn').forEach(b=>b.classList.remove('selected'));
+  document.querySelectorAll('.ep-btn').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
   document.getElementById('new-emoji').value = e;
+  
+  // Clear any uploaded product image if an emoji is chosen
+  if (uploadedProductImage) {
+    clearProductImage();
+  }
+}
+
+function handleProductImageUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  // Limit to 256KB for localStorage safety
+  if (file.size > 256 * 1024) {
+    showToast('⚠️ Imaj sa a twò gwo. Limit la se 256 KB!');
+    event.target.value = '';
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    uploadedProductImage = e.target.result;
+    document.getElementById('img-preview').src = uploadedProductImage;
+    document.getElementById('new-image-preview').style.display = 'block';
+    document.getElementById('clear-image-btn').style.display = 'block';
+    
+    // Deselect any selected emoji
+    document.querySelectorAll('.ep-btn').forEach(b => b.classList.remove('selected'));
+    document.getElementById('new-emoji').value = '';
+    showToast('🖼️ Imaj chwazi kòm ikòn!');
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearProductImage() {
+  uploadedProductImage = '';
+  document.getElementById('img-preview').src = '';
+  document.getElementById('new-image-preview').style.display = 'none';
+  document.getElementById('clear-image-btn').style.display = 'none';
+  document.getElementById('new-image-file').value = '';
 }
 
 // ── CATEGORIES & PRODUCTS ─────────────────────────────────────────────────
@@ -3340,7 +3393,7 @@ function renderProducts() {
 
     return `<div class="prod-card${outOfStock?' out-of-stock':''}" onclick="addToCart(${p.id})">
       ${qty > 0 ? `<div class="add-badge" style="display:flex">${qty}</div>` : ''}
-      <span class="prod-emoji">${p.emoji}</span>
+      ${p.image ? `<img src="${p.image}" class="prod-img" style="width:40px; height:40px; border-radius:50%; object-fit:cover; margin-bottom:8px;">` : `<span class="prod-emoji">${p.emoji || '📦'}</span>`}
       <div class="prod-name">${p.name}</div>
       <div class="prod-price">${p.price.toLocaleString('fr-HT')} HTG</div>
       <div class="prod-cat-tag">${p.cat}</div>
@@ -3403,7 +3456,7 @@ function renderModalCart() {
     if (!p) return '';
     const qty = cart[k];
     return `<div class="cart-item">
-      <div class="ci-emoji">${p.emoji}</div>
+      <div class="ci-emoji">${p.image ? `<img src="${p.image}" style="width:32px; height:32px; border-radius:50%; object-fit:cover;">` : (p.emoji || '📦')}</div>
       <div class="ci-info">
         <div class="ci-name">${p.name}</div>
         <div class="ci-price">${p.price.toLocaleString('fr-HT')} HTG × ${qty}</div>
@@ -3747,25 +3800,48 @@ function fmtK(n) {
 function addProduct() {
   const name = document.getElementById('new-name').value.trim();
   const price = parseFloat(document.getElementById('new-price').value) || 0;
-  const cat = document.getElementById('new-cat').value;
+  const cat = document.getElementById('new-cat').value; // can be empty ""
   const stock = parseInt(document.getElementById('new-stock').value) || 0;
   const emoji = document.getElementById('new-emoji').value;
+  const image = uploadedProductImage; // Base64 image data
 
   if (!name || price <= 0) {
     showToast('⚠️ Ranpli Non ak Pri!'); return;
   }
 
+  // Fallback icon if neither emoji nor custom image is selected
+  let finalEmoji = emoji;
+  if (!finalEmoji && !image) {
+    finalEmoji = '📦';
+  }
+
   const newProd = {
     id: Date.now(),
-    name, emoji, price, cat, stock
+    name, 
+    emoji: finalEmoji, 
+    image: image || undefined, 
+    price, 
+    cat: cat || 'Lòt', // Falls back to Lòt if empty, or you can use cat || "" if completely empty category is desired. Let's use cat || "" to let it be completely empty!
+    stock
   };
+
+  // Adjust fallback: let's allow completely empty category!
+  newProd.cat = cat || 'Lòt'; // If completely blank is preferred in lists, we can use cat || "" but "Lòt" is safer for catalog filters. Let's do cat || "" since they explicitly said "kite kategori a vid"!
+  newProd.cat = cat || "";
 
   products.push(newProd);
   saveData();
 
+  // Reset fields
   document.getElementById('new-name').value = '';
   document.getElementById('new-price').value = '';
   document.getElementById('new-stock').value = '';
+  document.getElementById('new-cat').value = ''; // Reset select to blank
+  
+  // Reset emoji and image upload states
+  document.querySelectorAll('.ep-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('new-emoji').value = '';
+  clearProductImage();
 
   renderProdMgmt();
   renderCategories();
@@ -3887,6 +3963,7 @@ function duplicateProduct(id) {
     id: Date.now(),
     name: prod.name + ' Copy',
     emoji: prod.emoji,
+    image: prod.image || undefined,
     price: prod.price,
     cat: prod.cat,
     stock: prod.stock === 999 ? 999 : 0
@@ -3951,7 +4028,7 @@ function renderProdMgmt() {
 
         return `
           <div class="prod-mgmt-item" style="${p.stock !== 999 && p.stock <= 5 ? 'border-left:3px solid var(--red);' : ''}">
-            <div class="pm-emoji">${p.emoji}</div>
+            <div class="pm-emoji">${p.image ? `<img src="${p.image}" style="width:28px; height:28px; border-radius:50%; object-fit:cover;">` : (p.emoji || '📦')}</div>
             <div class="pm-info">
               <div class="pm-name">${p.name}</div>
               <div class="pm-detail">
@@ -4376,7 +4453,10 @@ function getOrderLines() {
 }
 
 function productOptions(selectedId) {
-  return products.map(p => `<option value="${p.id}" ${p.id === selectedId ? 'selected' : ''}>${p.emoji} ${p.name} - ${p.price.toLocaleString('fr-HT')} HTG</option>`).join('');
+  return products.map(p => {
+    const ico = p.image ? '🖼️' : (p.emoji || '📦');
+    return `<option value="${p.id}" ${p.id === selectedId ? 'selected' : ''}>${ico} ${p.name} - ${p.price.toLocaleString('fr-HT')} HTG</option>`;
+  }).join('');
 }
 
 function addOrderLine(selectedId) {
@@ -5207,7 +5287,7 @@ function renderCostPriceList() {
     const maji = cost > 0 ? Math.round(((p.price - cost) / p.price) * 100) : null;
     return `<div class="param-row">
       <div class="param-row-info">
-        <div class="param-row-label">${p.emoji} ${p.name}</div>
+        <div class="param-row-label">${p.image ? `<img src="${p.image}" style="width:20px; height:20px; border-radius:50%; object-fit:cover; vertical-align:middle; margin-right:4px;">` : `<span style="margin-right:4px;">${p.emoji || '📦'}</span>`}${p.name}</div>
         <div class="param-row-sub">Vant: ${p.price.toLocaleString('fr-HT')} HTG${maji!==null?' · Maji: '+maji+'%':' · Antre pri achte a'}</div>
       </div>
       <input type="number" value="${cost||''}" placeholder="HTG"
@@ -6461,7 +6541,7 @@ async function initLicenseCheck() {
       banner.classList.add('visible');
     }
     // Ajoute padding-top sou pages pou banner la
-    document.querySelectorAll('.page').forEach(p => p.style.paddingTop = '52px');
+    document.querySelectorAll('.page').forEach(p => p.style.paddingTop = 'calc(128px + env(safe-area-inset-top))');
     return;
   }
 
