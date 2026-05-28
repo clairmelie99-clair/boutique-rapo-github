@@ -5893,6 +5893,11 @@ function saveData() {
   localStorage.setItem('br_cashiers', JSON.stringify(cashiers));
   localStorage.setItem('br_devices', JSON.stringify(deviceRegistry));
   localStorage.setItem('br_registered_shops', JSON.stringify(registeredShops));
+  
+  // Otomatik background sync pou pwofil boutik la si l anrejistre
+  if (typeof registeredShops !== 'undefined' && registeredShops && registeredShops[0]) {
+    syncShopToCloud(registeredShops[0], true);
+  }
 }
 
 function switchDetTab(tab) {
@@ -7325,6 +7330,13 @@ setTimeout(() => {
   initLicenseCheck();
   applyPlanRestrictions();
   updateLicenseBadgeSettings();
+  
+  // Demare yon senkronizasyon otomatik pou boutik la sou demaraj si l anrejistre
+  if (typeof registeredShops !== 'undefined' && registeredShops && registeredShops[0]) {
+    setTimeout(() => {
+      syncShopToCloud(registeredShops[0], true);
+    }, 3000);
+  }
 }, 1800); // Apre splash screen
 
 // Show fab badge after 5 seconds on first visit

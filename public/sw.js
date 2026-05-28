@@ -1,4 +1,4 @@
-const CACHE_NAME = 'clair-marche-v9';
+const CACHE_NAME = 'clair-marche-v10';
 const ASSETS = [
   './',
   './index.html',
