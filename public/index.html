@@ -2294,7 +2294,7 @@ body {
     <div class="order-row">
       <div class="order-field">
         <label>Boutik kote commande la prale</label>
-        <select id="order-shop" onchange="renderOrderSummary()">
+        <select id="order-shop" onchange="onOrderShopChange()">
           <option value="">Chwazi yon boutik...</option>
         </select>
       </div>
@@ -4623,24 +4623,32 @@ function toggleDeviceStatus(id) {
 }
 
 function getOrderLines() {
+  const shop = getSelectedOrderShop();
+  const list = (shop && shop.products && shop.products.length > 0) ? shop.products : products;
+  
   return [...document.querySelectorAll('#order-lines .order-line')].map(row => {
     const id = parseInt(row.querySelector('.order-product').value, 10);
     const qty = parseInt(row.querySelector('.order-qty').value, 10) || 0;
-    const p = products.find(x => x.id === id);
+    const p = list.find(x => x.id === id);
     return p && qty > 0 ? {
-      id: p.id, name: p.name, emoji: p.emoji, price: p.price, qty, total: p.price * qty
+      id: p.id, name: p.name, emoji: p.emoji, price: p.price, qty, total: p.price * qty,
+      isDigital: p.isDigital || false, accessLink: p.accessLink || '', deliveryMsg: p.deliveryMsg || ''
     } : null;
   }).filter(Boolean);
 }
 
 function productOptions(selectedId) {
-  return products.map(p => {
+  const shop = getSelectedOrderShop();
+  const list = (shop && shop.products && shop.products.length > 0) ? shop.products : products;
+  return list.map(p => {
     return `<option value="${p.id}" ${p.id === selectedId ? 'selected' : ''}>${p.name} - ${p.price.toLocaleString('fr-HT')} HTG</option>`;
   }).join('');
 }
 
 function addOrderLine(selectedId) {
-  const firstId = selectedId || products[0]?.id || '';
+  const shop = getSelectedOrderShop();
+  const list = (shop && shop.products && shop.products.length > 0) ? shop.products : products;
+  const firstId = selectedId || list[0]?.id || '';
   const wrap = document.getElementById('order-lines');
   if (!wrap) return;
   const row = document.createElement('div');
@@ -4650,6 +4658,31 @@ function addOrderLine(selectedId) {
     <input class="order-qty" type="number" value="1" min="1" oninput="renderOrderSummary()">
     <button class="order-remove" onclick="this.closest('.order-line').remove();renderOrderSummary()">×</button>`;
   wrap.appendChild(row);
+  renderOrderSummary();
+}
+
+function onOrderShopChange() {
+  const shop = getSelectedOrderShop();
+  const list = (shop && shop.products && shop.products.length > 0) ? shop.products : products;
+  
+  // Sere tout liy kòmand yo epi mete opsyon pwodwi yo ajou pou nouvo boutik la
+  const selects = document.querySelectorAll('#order-lines .order-product');
+  if (selects.length > 0) {
+    selects.forEach(select => {
+      const currentVal = parseInt(select.value, 10);
+      select.innerHTML = list.map(p => {
+        return `<option value="${p.id}">${p.name} - ${p.price.toLocaleString('fr-HT')} HTG</option>`;
+      }).join('');
+      // Si pwodwi a prezan nan nouvo boutik la, kenbe valè a, sinon chwazi premye a
+      if (list.some(p => p.id === currentVal)) {
+        select.value = currentVal;
+      } else {
+        select.value = list[0]?.id || '';
+      }
+    });
+  } else {
+    addOrderLine();
+  }
   renderOrderSummary();
 }
 
@@ -5219,7 +5252,8 @@ function normalizeRegisteredShop(shop) {
     status: shop.status === 'inactive' ? 'inactive' : 'active',
     source: shop.source || (shop.deviceId ? 'device' : 'manual'),
     updatedAt: shop.updatedAt || new Date().toISOString(),
-    createdAt: shop.createdAt || dateKey(new Date())
+    createdAt: shop.createdAt || dateKey(new Date()),
+    products: shop.products || []
   };
 }
 
@@ -5251,6 +5285,12 @@ async function syncShopToCloud(shop, silent = false) {
     return false;
   }
   if (!canUseOnlineShopApi()) return false;
+  
+  // Apwoche pwodwi yo si se boutik aparèy sa a
+  if (shop.deviceId === deviceId || shop.id === 'main') {
+    shop.products = products;
+  }
+
   try {
     const res = await fetch(ONLINE_SHOPS_API, {
       method: 'POST',
