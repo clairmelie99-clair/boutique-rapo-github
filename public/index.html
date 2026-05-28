@@ -4955,10 +4955,37 @@ function setOrderStatus(id, status) {
       totalVant: order.total, totalDep: order.deliveryFee,
       totalProfitProducts: order.items.reduce((s,i) => s + (i.price - (costPrices[i.id] || 0)) * i.qty, 0),
       pwòfi: order.subtotal - order.deliveryFee,
-      peman: order.payment
+      peman: order.payment,
+      clientPhone: order.phone || '' // Sove telefòn kliyan an pou pwodwi dijital!
     };
     transactions.push(deliveredTx);
     order.txId = deliveredTx.id;
+
+    // Detekte pwodwi dijital nan kòmand online lan
+    const hasDigital = order.items.some(i => i.isDigital);
+    if (hasDigital) {
+      // 1. Synchro sou nwaj
+      order.items.filter(i => i.isDigital).forEach(item => {
+        fetch(API_BASE_URL + '/api/digital-purchases', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            phone: order.phone,
+            productName: item.name,
+            accessLink: item.accessLink,
+            deliveryMsg: item.deliveryMsg,
+            shopName: order.shopName || shopInfo.name || 'ClairMarché POS',
+            txId: deliveredTx.id,
+            date: deliveredTx.date + ' ' + deliveredTx.time
+          })
+        }).catch(err => console.error('Erè synchro online:', err));
+      });
+
+      // 2. Louvri modal livrezon imedya
+      setTimeout(() => {
+        showDigitalDelivery(deliveredTx);
+      }, 800);
+    }
   }
   order.status = status;
   if (status === 'payment_verified') order.paymentVerifiedAt = new Date().toISOString();
