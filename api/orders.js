@@ -35,10 +35,16 @@ export default async function handler(req, res) {
 
   try {
     if (req.method === 'GET') {
-      const { deviceId, shopIds } = req.query;
+      const { deviceId, shopIds, phone } = req.query;
       let filtered = [...db];
 
-      if (shopIds) {
+      if (phone) {
+        const cleanPhone = phone.replace(/[^0-9]/g, '');
+        filtered = filtered.filter(o => {
+          const cleanOPhone = String(o.phone || '').replace(/[^0-9]/g, '');
+          return cleanOPhone.endsWith(cleanPhone) || cleanPhone.endsWith(cleanOPhone);
+        });
+      } else if (shopIds) {
         const ids = shopIds.split(',');
         filtered = filtered.filter(o => ids.includes(String(o.shopId)));
       } else if (deviceId) {

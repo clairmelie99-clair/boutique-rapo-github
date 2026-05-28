@@ -1,4 +1,4 @@
-// api/digital-purchases.js — v1 (node-fetch)
+// api/digital-purchases.js — v2 (node-fetch)
 import fetch from 'node-fetch';
 import fs from 'fs';
 import path from 'path';
@@ -34,9 +34,9 @@ export default async function handler(req, res) {
   const KEY = process.env.SUPABASE_SERVICE_KEY;
 
   try {
-    // ── GET: Query purchased courses by student phone ──
+    // ── GET: Query purchased courses with PIN and Device Lock ──
     if (req.method === 'GET') {
-      const { phone } = req.query;
+      const { phone, pin, deviceId } = req.query;
       if (!phone) {
         return res.status(400).json({ error: 'phone parameter is required' });
       }
@@ -76,7 +76,9 @@ export default async function handler(req, res) {
                 deliveryMsg: r.delivery_msg,
                 shopName: r.shop_name,
                 txId: r.tx_id,
-                date: r.created_at
+                date: r.created_at,
+                studentPin: r.student_pin,
+                registeredDeviceId: r.registered_device_id
               }));
 
               // Merge both (de-duplicate by txId + productName)
@@ -97,15 +99,84 @@ export default async function handler(req, res) {
         }
       }
 
+      // Enforce PIN validation if provided
+      if (pin) {
+        filtered = filtered.filter(p => String(p.studentPin || '') === String(pin));
+      }
+
+      // Enforce Device Lock (Anti-Piracy)
+      let databaseChanged = false;
+      if (deviceId) {
+        filtered = filtered.map(p => {
+          if (!p.registeredDeviceId) {
+            // First time logging in: register this deviceId!
+            p.registeredDeviceId = deviceId;
+            databaseChanged = true;
+            return p;
+          } else if (p.registeredDeviceId !== deviceId) {
+            // Piracy attempt: lock this purchase!
+            return {
+              ...p,
+              isLocked: true,
+              accessLink: '', // Hide access link
+              deliveryMsg: '⚠️ Bloke kont piraj! Aparèy sa a pa otorize.'
+            };
+          }
+          return p;
+        });
+
+        // Save registry back to local /tmp db
+        if (databaseChanged) {
+          let db = readDB();
+          let localChanged = false;
+          filtered.forEach(fp => {
+            if (!fp.isLocked) {
+              const idx = db.findIndex(p => String(p.txId) === String(fp.txId) && p.productName === fp.productName);
+              if (idx >= 0 && !db[idx].registeredDeviceId) {
+                db[idx].registeredDeviceId = fp.registeredDeviceId;
+                localChanged = true;
+              }
+            }
+          });
+          if (localChanged) writeDB(db);
+
+          // Save registry back to Supabase if available
+          if (SB && KEY) {
+            for (const fp of filtered) {
+              if (!fp.isLocked) {
+                try {
+                  const updateUrl = `${SB}/rest/v1/digital_purchases?tx_id=eq.${fp.txId}&product_name=eq.${encodeURIComponent(fp.productName)}`;
+                  await fetch(updateUrl, {
+                    method: 'PATCH',
+                    headers: {
+                      'apikey': KEY,
+                      'Authorization': `Bearer ${KEY}`,
+                      'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                      registered_device_id: fp.registeredDeviceId
+                    })
+                  });
+                } catch (sbUpErr) {
+                  console.error('Supabase update device lock error:', sbUpErr.message);
+                }
+              }
+            }
+          }
+        }
+      }
+
       return res.status(200).json({ purchases: filtered });
     }
 
-    // ── POST: Record new digital purchase ──
+    // ── POST: Record new digital purchase with student PIN ──
     if (req.method === 'POST') {
-      const { phone, productName, accessLink, deliveryMsg, shopName, txId, date } = req.body || {};
+      const { phone, productName, accessLink, deliveryMsg, shopName, txId, date, studentPin } = req.body || {};
       if (!phone || !productName) {
         return res.status(400).json({ error: 'phone and productName are required' });
       }
+
+      const generatedPin = studentPin || String(Math.floor(1000 + Math.random() * 9000));
 
       const newPurchase = {
         phone,
@@ -114,7 +185,9 @@ export default async function handler(req, res) {
         deliveryMsg: deliveryMsg || '',
         shopName: shopName || 'ClairMarché POS',
         txId: String(txId || Date.now()),
-        date: date || new Date().toISOString()
+        date: date || new Date().toISOString(),
+        studentPin: String(generatedPin),
+        registeredDeviceId: ""
       };
 
       // 1. Save to local /tmp database
@@ -143,7 +216,9 @@ export default async function handler(req, res) {
               delivery_msg: deliveryMsg || '',
               shop_name: shopName || 'ClairMarché POS',
               tx_id: String(txId || Date.now()),
-              created_at: date || new Date().toISOString()
+              created_at: date || new Date().toISOString(),
+              student_pin: String(generatedPin),
+              registered_device_id: ""
             })
           });
           sbSuccess = resp.ok;

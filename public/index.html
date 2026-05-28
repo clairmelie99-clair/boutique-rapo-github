@@ -2335,7 +2335,10 @@ body {
       </div>
       <div class="order-field">
         <label>Screenshot peman</label>
-        <input type="file" id="order-payment-proof" accept="image/*" onchange="renderOrderSummary()">
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <input type="file" id="order-payment-proof" accept="image/*" onchange="renderOrderSummary()" style="flex: 1;">
+          <button type="button" class="mini-btn purple" style="margin: 0; padding: 10px 14px; white-space: nowrap; background: linear-gradient(135deg, #a855f7, #7c3aed); border: none; color: white; border-radius: 8px; font-weight: 700; cursor: pointer;" onclick="openPaymentSimulator()">⚡ Simile Peman</button>
+        </div>
       </div>
     </div>
 
@@ -2545,6 +2548,26 @@ body {
     <input class="pay-amount-input" type="number" id="pay-amount-input" placeholder="0 HTG">
     <button class="pay-confirm-btn" onclick="confirmPay()">✓ Konfime Peman</button>
     <button class="pay-cancel-btn" onclick="closePay()">Anile</button>
+  </div>
+</div>
+
+<!-- ══ NATCASH / MONCASH PAYMENT SIMULATOR MODAL ═════════════════════════ -->
+<div class="pay-modal-overlay" id="payment-simulator-modal" style="display:none; align-items:center; justify-content:center; background:rgba(15,10,25,0.85); backdrop-filter:blur(8px); z-index:99999; position:fixed; top:0; left:0; right:0; bottom:0;">
+  <div style="width: 340px; height: 600px; background: #0f172a; border: 8px solid #334155; border-radius: 40px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); overflow: hidden; position: relative; display: flex; flex-direction: column; font-family: 'Outfit', sans-serif;">
+    <!-- Phone Top Speaker / Camera Notch -->
+    <div style="width: 130px; height: 20px; background: #334155; border-radius: 0 0 15px 15px; position: absolute; top: 0; left: 50%; transform: translateX(-50%); z-index: 10;"></div>
+    <!-- Phone Screen Header -->
+    <div style="height: 35px; background: rgba(0,0,0,0.2); display: flex; justify-content: space-between; align-items: center; padding: 0 24px; font-size: 0.72rem; color: #94a3b8; margin-top: 5px;">
+      <span>09:41</span>
+      <div style="display: flex; gap: 4px;">
+        <span>📶</span>
+        <span>🔋</span>
+      </div>
+    </div>
+    <!-- Screen Content Container -->
+    <div id="sim-screen-container" style="flex: 1; display: flex; flex-direction: column; padding: 16px; justify-content: space-between; overflow-y: auto;">
+      <!-- Dynamic Screen Content gets injected here -->
+    </div>
   </div>
 </div>
 
@@ -4698,6 +4721,92 @@ function initOrdersPage() {
 }
 
 const ONLINE_ORDERS_API = API_BASE_URL + '/api/orders';
+let simulatedPayment = false;
+let simulatedProofDataUrl = "";
+
+async function createOnlineOrder() {
+  if (!cashierCanUseOrders()) { showToast('⛔ Caissier sa a pa gen aksè commande.'); return; }
+  const shop = getSelectedOrderShop();
+  const client = document.getElementById('order-client').value.trim();
+  const phone = document.getElementById('order-phone').value.trim();
+  const address = document.getElementById('order-address').value.trim();
+  const distance = parseFloat(document.getElementById('order-distance').value) || 0;
+  const payment = document.getElementById('order-payment').value;
+  const paidAmount = parseFloat(document.getElementById('order-paid-amount')?.value) || 0;
+  const proofFile = document.getElementById('order-payment-proof')?.files?.[0];
+  const items = getOrderLines();
+  if (!shop || !client || !phone || !address || items.length === 0) {
+    showToast('⚠️ Chwazi boutik epi ranpli kliyan, telefòn, adrès ak pwodwi!');
+    return;
+  }
+  for (const item of items) {
+    const p = products.find(x => x.id === item.id);
+    if (p && p.stock !== 999 && item.qty > p.stock) {
+      showToast('⚠️ Stock pa sifi pou ' + item.name);
+      return;
+    }
+  }
+  const subtotal = items.reduce((s, i) => s + i.total, 0);
+  const deliveryFee = calculateDeliveryFee(distance);
+  const total = subtotal + deliveryFee;
+  const paidPercent = total > 0 ? Math.round((paidAmount / total) * 100) : 0;
+  if (!['NatCash','MonCash'].includes(payment)) {
+    showToast('⚠️ Commande livrezon bezwen NatCash oswa MonCash.');
+    return;
+  }
+  if (paidAmount < total * 0.75) {
+    showToast('⚠️ Peman davans lan dwe minimum 75% total commande la.');
+    return;
+  }
+  if (!proofFile && !simulatedPayment) {
+    showToast('⚠️ Ajoute screenshot peman NatCash/MonCash la.');
+    return;
+  }
+  if (proofFile && proofFile.size > 900000) {
+    showToast('⚠️ Screenshot la twò gwo. Chwazi yon imaj pi lejè.');
+    return;
+  }
+
+  const paymentProofDataUrl = simulatedPayment ? simulatedProofDataUrl : await fileToDataUrl(proofFile);
+  const paymentProofName = simulatedPayment ? `simulated_${payment}_receipt.png` : proofFile.name;
+
+  const order = {
+    id: Date.now(), date: dateKey(new Date()),
+    time: new Date().toLocaleTimeString('fr-HT',{hour:'2-digit',minute:'2-digit'}),
+    shopId: shop.id,
+    shopDeviceId: shop.deviceId || '',
+    shopName: shop.name,
+    shopPhone: shop.phone || '',
+    shopAddress: shop.address || '',
+    client, phone, address, distance, payment, items,
+    subtotal, deliveryFee, total,
+    paidAmount, paidPercent, paymentProofDataUrl, paymentProofName,
+    paymentVerifiedAt: simulatedPayment ? new Date().toISOString() : null, 
+    onTheWayAt: null, deliveredAt: null,
+    status: simulatedPayment ? 'payment_verified' : 'pending_payment', 
+    deviceId, cashierId: cashierSession.id || null, cashier: cashierSession.name || 'Admin', shift: cashierSession.shift || 'Jounen'
+  };
+
+  onlineOrders.unshift(order);
+  localStorage.setItem('br_orders', JSON.stringify(onlineOrders));
+  syncOrderToCloud(order, true);
+  
+  document.getElementById('order-client').value = '';
+  document.getElementById('order-phone').value = '';
+  document.getElementById('order-address').value = '';
+  document.getElementById('order-distance').value = '';
+  document.getElementById('order-paid-amount').value = '';
+  document.getElementById('order-payment-proof').value = '';
+  document.getElementById('order-lines').innerHTML = '';
+  
+  simulatedPayment = false;
+  simulatedProofDataUrl = "";
+
+  addOrderLine();
+  renderOrders();
+  renderAdminPage();
+  showToast(order.status === 'payment_verified' ? '💳 Kòmand & Peman Verifye Otomatikman!' : '🛵 Commande anrejistre!');
+}
 
 function canUseOnlineOrderApi() {
   return location.protocol === 'http:' || location.protocol === 'https:';
@@ -7210,10 +7319,22 @@ function closeDigitalDelivery() {
 
 async function searchStudentLibrary() {
   const phoneInput = document.getElementById('library-phone-input');
-  if (!phoneInput) return;
+  const pinInput = document.getElementById('library-pin-input');
+  if (!phoneInput || !pinInput) return;
+  
   const phone = phoneInput.value.trim();
+  const pin = pinInput.value.trim();
+  
   if (!phone) {
     showToast('⚠️ Antre nimewo telefòn ou!');
+    return;
+  }
+  if (!pin) {
+    showToast('⚠️ Antre PIN sekirite 4 chif ou!');
+    return;
+  }
+  if (pin.length !== 4) {
+    showToast('⚠️ PIN sekirite a dwe gen 4 chif!');
     return;
   }
 
@@ -7229,26 +7350,32 @@ async function searchStudentLibrary() {
     </style>
     <div style="text-align:center; padding:50px 20px;">
       <div style="border: 4px solid rgba(168,85,247,0.1); border-left-color: #c084fc; width: 36px; height: 36px; border-radius: 50%; animation: librarySpin 1s linear infinite; margin: 0 auto 16px;"></div>
-      <div style="color:#c084fc; font-size:0.9rem; font-weight:600;">Ap chache kou ou yo sou nwaj la...</div>
+      <div style="color:#c084fc; font-size:0.9rem; font-weight:600;">Otantifikasyon & Rechèch kou sou nwaj sekirite a...</div>
     </div>`;
 
   let allPurchases = [];
+  let trackingOrders = [];
 
-  // 1. Chache nan lokal (transactions lokal)
+  // 1. Chache nan lokal (transactions lokal avèk kontwòl PIN)
   const cleanPhone = phone.replace(/[^0-9]/g, '');
   if (transactions && transactions.length > 0) {
     transactions.forEach(tx => {
       const cleanTxPhone = (tx.clientPhone || '').replace(/[^0-9]/g, '');
       if (cleanTxPhone && (cleanTxPhone.endsWith(cleanPhone) || cleanPhone.endsWith(cleanTxPhone))) {
+        // Otantifikasyon PIN lokal
+        if (tx.studentPin && String(tx.studentPin) !== String(pin)) {
+          return; // PIN pa koresponn
+        }
         tx.items.forEach(item => {
           if (item.isDigital) {
             allPurchases.push({
               productName: item.name,
               accessLink: item.accessLink || '',
               deliveryMsg: item.deliveryMsg || '',
-              shopName: shopInfo.name || 'ClairMarché POS',
+              shopName: tx.shopName || shopInfo.name || 'ClairMarché POS',
               date: tx.date + ' ' + tx.time,
-              txId: tx.id
+              txId: tx.id,
+              studentPin: tx.studentPin || pin
             });
           }
         });
@@ -7256,9 +7383,22 @@ async function searchStudentLibrary() {
     });
   }
 
-  // 2. Chache nan API a (Supabase + Cloud fallback)
+  // 2. Chache kòmand online yo pou swiv estati an tan reyèl
   try {
-    const res = await fetch(API_BASE_URL + '/api/digital-purchases?phone=' + encodeURIComponent(phone));
+    const ordersRes = await fetch(API_BASE_URL + '/api/orders?phone=' + encodeURIComponent(phone));
+    if (ordersRes.ok) {
+      const oData = await ordersRes.json();
+      if (oData.orders && oData.orders.length > 0) {
+        trackingOrders = oData.orders;
+      }
+    }
+  } catch (err) {
+    console.error('Erè chache kòmand online:', err);
+  }
+
+  // 3. Chache nan API a ak PIN ak kontwòl aparèy (Supabase + Cloud secure endpoint)
+  try {
+    const res = await fetch(API_BASE_URL + `/api/digital-purchases?phone=${encodeURIComponent(phone)}&pin=${encodeURIComponent(pin)}&deviceId=${encodeURIComponent(deviceId)}`);
     if (res.ok) {
       const data = await res.json();
       if (data.purchases && data.purchases.length > 0) {
@@ -7266,6 +7406,10 @@ async function searchStudentLibrary() {
           const exists = allPurchases.some(x => String(x.txId) === String(p.txId) && x.productName === p.productName);
           if (!exists) {
             allPurchases.push(p);
+          } else {
+            // Mizajou done cloud tankou isLocked
+            const idx = allPurchases.findIndex(x => String(x.txId) === String(p.txId) && x.productName === p.productName);
+            if (idx >= 0) allPurchases[idx] = p;
           }
         });
       }
@@ -7274,54 +7418,515 @@ async function searchStudentLibrary() {
     console.error('Error fetching online purchases:', err);
   }
 
-  // 3. Afiche rezilta yo
+  // 4. Afiche Rezilta Yo
+  let trackingHtml = '';
+  if (trackingOrders.length > 0) {
+    trackingHtml = `
+      <div style="margin-bottom: 24px; background: rgba(255,255,255,0.02); border: 1px solid rgba(168, 85, 247, 0.15); border-radius: 16px; padding: 18px;">
+        <h3 style="color:#e9d5ff; font-size:1.05rem; font-weight:800; margin:0 0 12px; display:flex; align-items:center; gap:8px;">🛵 Swiv Kòmand an Tan Reyèl</h3>
+        ${trackingOrders.map(o => {
+          const status = o.status || 'pending_payment';
+          let progressPercent = 25;
+          let statusText = '⏳ Ap tann validasyon peman lekòl la...';
+          let statusColor = '#eab308';
+          let glowColor = 'rgba(234,179,8,0.2)';
+
+          if (status === 'payment_verified') {
+            progressPercent = 50;
+            statusText = '💳 Peman Verifye! Y ap prepare kòmand ou...';
+            statusColor = '#a855f7';
+            glowColor = 'rgba(168,85,247,0.2)';
+          } else if (status === 'on_the_way') {
+            progressPercent = 75;
+            statusText = '🛵 Kòmand ou an wout! Ap pote l pou ou...';
+            statusColor = '#3b82f6';
+            glowColor = 'rgba(59,130,246,0.2)';
+          } else if (status === 'delivered') {
+            progressPercent = 100;
+            statusText = '🟢 Kòmand ou Livre! Aksè kounye a.';
+            statusColor = '#22c55e';
+            glowColor = 'rgba(34,197,94,0.2)';
+          } else if (status === 'cancelled') {
+            progressPercent = 0;
+            statusText = '❌ Kòmand sa a anile.';
+            statusColor = '#ef4444';
+            glowColor = 'rgba(239,68,68,0.2)';
+          }
+
+          return `
+            <div style="background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 14px; margin-bottom: 12px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <span style="color:#fff; font-weight:700; font-size:0.82rem;">Kòmand #${String(o.id).slice(-5)} · ${o.shopName}</span>
+                <span style="color:${statusColor}; font-size:0.75rem; font-weight:800;">${status.toUpperCase()}</span>
+              </div>
+              <div style="font-size:0.72rem; color:#aaa; margin-bottom:10px;">Atik: ${o.items.map(i => i.name + ' x' + i.qty).join(', ')}</div>
+              
+              <!-- Progress Bar -->
+              <div style="height:6px; background:rgba(255,255,255,0.08); border-radius:99px; overflow:hidden; margin-bottom:8px; position:relative;">
+                <div style="height:100%; width:${progressPercent}%; background:${statusColor}; box-shadow: 0 0 10px ${glowColor}; transition: width 0.5s ease-in-out;"></div>
+              </div>
+              <div style="font-size:0.75rem; color:${statusColor}; font-weight:600; text-align:left;">${statusText}</div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+  }
+
   if (allPurchases.length === 0) {
-    container.innerHTML = `
+    container.innerHTML = trackingHtml + `
       <div style="background:rgba(255,61,87,0.05); border:1px solid rgba(255,61,87,0.2); border-radius:16px; padding:30px; text-align:center;">
         <div style="font-size:3rem; margin-bottom:12px;">🔍❌</div>
         <h4 style="color:#ff3d57; font-weight:800; margin-bottom:6px;">Pa gen okenn kou ki jwenn</h4>
-        <p style="color:#aaa; font-size:0.82rem; line-height: 1.4;">Nou pa jwenn okenn kou ki achte ak nimewo telefòn sa a: <strong>${phone}</strong>. Verifye nimewo a oswa kontakte sipò.</p>
+        <p style="color:#aaa; font-size:0.82rem; line-height: 1.4;">Nou pa jwenn okenn kou ki aktif pou nimewo telefòn ak PIN sa a. Verifye enfòmasyon yo oswa tann validasyon peman kòmand lan anlè a.</p>
       </div>`;
     return;
   }
 
   // Zòdone pa dat (pi resan an premye)
   allPurchases.sort((a,b) => {
-    const dateA = new Date(a.date.replace(/-/g, '/'));
-    const dateB = new Date(b.date.replace(/-/g, '/'));
+    const dateA = new Date(a.date ? a.date.replace(/-/g, '/') : 0);
+    const dateB = new Date(b.date ? b.date.replace(/-/g, '/') : 0);
     return dateB - dateA;
   });
 
-  container.innerHTML = allPurchases.map(p => `
-    <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(168, 85, 247, 0.2); border-radius: 16px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); backdrop-filter: blur(10px); margin-bottom: 16px; position: relative; overflow: hidden; text-align: left;">
-      <div style="position: absolute; top: -20px; right: -20px; width: 60px; height: 60px; background: rgba(168, 85, 247, 0.2); filter: blur(20px); border-radius: 50%;"></div>
-      
-      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
-        <span style="background: rgba(168, 85, 247, 0.15); color: #c084fc; font-size: 0.68rem; font-weight: 800; padding: 4px 10px; border-radius: 99px; border: 1px solid rgba(168, 85, 247, 0.3);">🌐 DIJITAL</span>
-        <span style="color: #777; font-size: 0.72rem; font-family:'Space Mono',monospace;">${p.date ? p.date.substring(0, 10) : ''}</span>
-      </div>
+  const purchasesHtml = allPurchases.map((p, idx) => {
+    const courseId = p.txId + '_' + idx;
+    
+    // Check local progress
+    const progressKey = `br_progress_${phone}_${p.productName}`;
+    const finishedLessons = JSON.parse(localStorage.getItem(progressKey) || '[]');
+    const progressPercent = Math.round((finishedLessons.length / 5) * 100);
 
-      <h4 style="color: #fff; font-size: 1.15rem; font-weight: 800; margin-bottom: 4px; line-height: 1.3;">${p.productName}</h4>
-      <div style="color: #c084fc; font-size: 0.78rem; font-weight: 600; margin-bottom: 16px; display:flex; align-items:center; gap:4px;">
-        🏫 Machann: <span>${p.shopName || 'ClairMarché'}</span>
-      </div>
+    if (p.isLocked) {
+      return `
+        <div style="background: rgba(239, 68, 68, 0.08); border: 2px solid #ef4444; border-radius: 16px; padding: 22px; margin-bottom: 16px; position: relative; text-align: center;">
+          <div style="font-size: 3rem; margin-bottom: 12px;">⛔</div>
+          <h4 style="color: #ef4444; font-size: 1.2rem; font-weight: 800; margin-bottom: 8px;">APARÈY SA A BLOKE POU PIRAJ!</h4>
+          <p style="color: #cbd5e1; font-size: 0.85rem; line-height: 1.45; margin: 0 0 16px;">
+            Sistèm sekirite ClairMarché detekte ke w ap eseye louvri kou **"${p.productName}"** la sou yon lòt aparèy ki pa sa ou te konekte premye fwa a.<br>
+            Pataje kont entèdi nèt pou evite piraj.
+          </p>
+          <div style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 10px; font-size: 0.72rem; color: #aaa; font-family: monospace;">
+            ID Aparèy ou: ${deviceId}<br>
+            Kontakte sipò akademi an pou reset aparèy otorize w la.
+          </div>
+        </div>
+      `;
+    }
 
-      <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px; padding: 12px; margin-bottom: 16px;">
-        <span style="font-size: 0.72rem; color: #c084fc; font-weight: 700; display: block; margin-bottom: 4px;">📝 Mesaj Livrezon / Enstriksyon:</span>
-        <p style="color: #ccc; font-size: 0.8rem; margin: 0; line-height: 1.45; white-space: pre-wrap;">${p.deliveryMsg || 'Pa gen enstriksyon adisyonèl.'}</p>
-      </div>
+    return `
+      <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(168, 85, 247, 0.2); border-radius: 16px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); backdrop-filter: blur(10px); margin-bottom: 16px; position: relative; overflow: hidden; text-align: left;">
+        <div style="position: absolute; top: -20px; right: -20px; width: 60px; height: 60px; background: rgba(168, 85, 247, 0.2); filter: blur(20px); border-radius: 50%;"></div>
+        
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+          <span style="background: rgba(168, 85, 247, 0.15); color: #c084fc; font-size: 0.68rem; font-weight: 800; padding: 4px 10px; border-radius: 99px; border: 1px solid rgba(168, 85, 247, 0.3);">🎓 KLAS VITYÈL AKTIF</span>
+          <span style="color: #777; font-size: 0.72rem; font-family:'Space Mono',monospace;">${p.date ? p.date.substring(0, 10) : ''}</span>
+        </div>
 
-      ${p.accessLink ? `
-        <a href="${p.accessLink}" target="_blank" style="display: block; text-align: center; background: linear-gradient(135deg, #a855f7, #7c3aed); border: none; color: white; padding: 12px; font-weight: 700; font-family: 'Outfit', sans-serif; font-size: 0.9rem; border-radius: 10px; cursor: pointer; text-decoration: none; transition: all 0.3s; box-shadow: 0 4px 12px rgba(168, 85, 247, 0.2);"
-           onmouseover="this.style.opacity='0.9'"
-           onmouseout="this.style.opacity='1'">
-          🚀 Ouvri Kou / Paj Aksè
-        </a>
-      ` : `
-        <div style="text-align: center; color: #777; font-size: 0.8rem; font-style: italic; padding: 8px;">Pa gen lyen aksè dirèk (Tcheke enstriksyon yo anwo a)</div>
-      `}
-    </div>
-  `).join('');
+        <h4 style="color: #fff; font-size: 1.25rem; font-weight: 800; margin-bottom: 4px; line-height: 1.3;">${p.productName}</h4>
+        <div style="color: #c084fc; font-size: 0.78rem; font-weight: 600; margin-bottom: 16px; display:flex; align-items:center; gap:4px;">
+          🏫 Akademi: <span>${p.shopName || 'ClairMarché'}</span>
+        </div>
+
+        <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px; padding: 12px; margin-bottom: 16px;">
+          <span style="font-size: 0.72rem; color: #c084fc; font-weight: 700; display: block; margin-bottom: 4px;">📝 Enstriksyon & Mesaj Pwofesè:</span>
+          <p style="color: #ccc; font-size: 0.8rem; margin: 0; line-height: 1.45; white-space: pre-wrap;">${p.deliveryMsg || 'Swiv kou a anba a epi tcheke leson ou konplete yo.'}</p>
+        </div>
+
+        <!-- Progress Tracker Section -->
+        <div style="margin-bottom: 18px; padding: 12px; background: rgba(168,85,247,0.06); border: 1px solid rgba(168,85,247,0.15); border-radius: 12px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <span style="color:#e9d5ff; font-size:0.78rem; font-weight:700;">📈 Pwogrè Kou a:</span>
+            <span id="progress-text-${courseId}" style="color:#c084fc; font-size:0.8rem; font-weight:900;">${progressPercent}%</span>
+          </div>
+          <div style="height:8px; background:rgba(255,255,255,0.08); border-radius:99px; overflow:hidden; margin-bottom:12px;">
+            <div id="progress-bar-${courseId}" style="height:100%; width:${progressPercent}%; background:linear-gradient(90deg, #c084fc, #7c3aed); border-radius:99px; transition: width 0.3s ease;"></div>
+          </div>
+          
+          <!-- Lesson Checklist -->
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            ${[
+              "Leson 1: Entwodiksyon ak Fondasyon Prensipal",
+              "Leson 2: Konfigirasyon, Zouti ak Prensip Debaz yo",
+              "Leson 3: Teknik Pratik, Metodoloji ak Devlopman",
+              "Leson 4: Sekirite Avanse, Optimize ak Pèfòmans",
+              "Leson 5: Devlopman Pwojè Pratik Final ak Evalyasyon"
+            ].map((lesson, lIdx) => {
+              const checked = finishedLessons.includes(lIdx) ? 'checked' : '';
+              return `
+                <label style="display:flex; align-items:center; gap:8px; color:#cbd5e1; font-size:0.75rem; cursor:pointer; user-select:none; margin: 2px 0;">
+                  <input type="checkbox" ${checked} onchange="toggleLessonCheck(this, '${courseId}', '${p.productName}', '${phone}', ${lIdx})" style="accent-color:#c084fc; width:14px; height:14px; cursor:pointer;">
+                  <span>${lesson}</span>
+                </label>
+              `;
+            }).join('')}
+          </div>
+        </div>
+
+        <!-- Certificate & Assistant Toggle Buttons -->
+        <div style="display:flex; gap:8px; margin-bottom: 12px;">
+          <button onclick="toggleAICoach('${courseId}')" style="flex:1; background:rgba(124,58,237,0.15); border:1px solid rgba(124,58,237,0.3); color:#e9d5ff; padding:10px; font-size:0.8rem; font-weight:700; border-radius:10px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+            💬 Antrenè IA
+          </button>
+          ${p.accessLink ? `
+            <a href="${p.accessLink}" target="_blank" style="flex:1.2; text-align: center; background: linear-gradient(135deg, #a855f7, #7c3aed); border: none; color: white; padding: 10px; font-weight: 700; font-family: 'Outfit', sans-serif; font-size: 0.8rem; border-radius: 10px; cursor: pointer; text-decoration: none; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow: 0 4px 12px rgba(168, 85, 247, 0.2);">
+              🚀 Ouvri Paj Aksè
+            </a>
+          ` : ''}
+        </div>
+
+        <!-- Auto-Certificate printed only when progress hit 100% -->
+        <div id="cert-wrapper-${courseId}" style="display: ${progressPercent === 100 ? 'block' : 'none'};">
+          <style>
+            @keyframes certGlow {
+              0% { box-shadow: 0 0 5px rgba(234,179,8,0.3); }
+              50% { box-shadow: 0 0 15px rgba(234,179,8,0.6); }
+              100% { box-shadow: 0 0 5px rgba(234,179,8,0.3); }
+            }
+          </style>
+          <button onclick="printStudentCertificate('${p.accessLink ? 'Elèv ClairMarché' : 'Elèv Akademi'}', '${p.productName.replace(/'/g, "\\'")}')" style="width:100%; border:none; background: linear-gradient(135deg, #eab308, #ca8a04); color:#1e1b4b; padding:12px; font-weight:900; font-family:'Outfit',sans-serif; font-size:0.82rem; border-radius:10px; cursor:pointer; box-shadow: 0 0 10px rgba(234,179,8,0.4); text-transform:uppercase; letter-spacing:1px; animation: certGlow 2s infinite; display:flex; align-items:center; justify-content:center; gap:6px;">
+            🎓 Telechaje Sètifika Diplomatik
+          </button>
+        </div>
+
+        <!-- Embedded Glassmorphic AI Chat Panel -->
+        <div id="ai-coach-${courseId}" style="display:none; margin-top:16px; padding:14px; background:rgba(124,58,237,0.06); border:1px solid rgba(124,58,237,0.25); border-radius:12px; backdrop-filter:blur(8px);">
+          <div style="font-weight:700; color:#c084fc; font-size:0.85rem; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+            <span>💬 Antrenè IA Pèsonèl (KlèCoach)</span>
+            <span style="font-size:0.7rem; background:rgba(168,85,247,0.2); padding:2px 6px; border-radius:4px; color:#e9d5ff;">Claude 3.5 Sonnet</span>
+          </div>
+          <div id="ai-messages-${courseId}" style="max-height:160px; overflow-y:auto; font-size:0.8rem; margin-bottom:10px; display:flex; flex-direction:column; gap:8px; padding-right:4px;">
+            <div style="color:#aaa; font-style:italic; background:rgba(255,255,255,0.02); padding:6px 10px; border-radius:6px;">Bonjou! Mwen se KlèCoach, antrenè entèlijan ou pou kou sa a. Poze m nenpòt kesyon sou leson yo oswa si w bezwen èd pou konprann yon bagay!</div>
+          </div>
+          <div style="display:flex; gap:6px;">
+            <input type="text" id="ai-input-${courseId}" placeholder="Ekri yon mesaj isit la..." style="flex:1; background:rgba(0,0,0,0.3); border:1px solid rgba(168,85,247,0.3); border-radius:8px; padding:8px 12px; color:#fff; font-size:0.8rem; outline:none;" onkeydown="if(event.key==='Enter') sendAICoachMessage('${courseId}', '${p.productName.replace(/'/g, "\\'")}')">
+            <button onclick="sendAICoachMessage('${courseId}', '${p.productName.replace(/'/g, "\\'")}')" style="background:#7c3aed; border:none; color:white; padding:8px 14px; border-radius:8px; font-weight:700; font-size:0.8rem; cursor:pointer;">Voye</button>
+          </div>
+        </div>
+
+      </div>
+    `;
+  }).join('');
+
+  container.innerHTML = trackingHtml + purchasesHtml;
+}
+
+// ── DIGITAL CLASSROOM HELPERS ──────────────────────────────────────────────
+function toggleLessonCheck(input, courseId, courseName, phone, lIdx) {
+  const progressKey = `br_progress_${phone}_${courseName}`;
+  let finishedLessons = JSON.parse(localStorage.getItem(progressKey) || '[]');
+  
+  if (input.checked) {
+    if (!finishedLessons.includes(lIdx)) finishedLessons.push(lIdx);
+  } else {
+    finishedLessons = finishedLessons.filter(idx => idx !== lIdx);
+  }
+  
+  localStorage.setItem(progressKey, JSON.stringify(finishedLessons));
+  
+  // Recalculate percent
+  const percent = Math.round((finishedLessons.length / 5) * 100);
+  
+  // Update progress bar
+  const bar = document.getElementById(`progress-bar-${courseId}`);
+  const txt = document.getElementById(`progress-text-${courseId}`);
+  const certWrapper = document.getElementById(`cert-wrapper-${courseId}`);
+  
+  if (bar) bar.style.width = percent + '%';
+  if (txt) txt.textContent = percent + '%';
+  if (certWrapper) {
+    certWrapper.style.display = percent === 100 ? 'block' : 'none';
+  }
+}
+
+function toggleAICoach(courseId) {
+  const el = document.getElementById(`ai-coach-${courseId}`);
+  if (!el) return;
+  if (el.style.display === 'none') {
+    el.style.display = 'block';
+    el.style.animation = 'fadeIn 0.3s ease';
+  } else {
+    el.style.display = 'none';
+  }
+}
+
+async function sendAICoachMessage(courseId, courseName) {
+  const inputEl = document.getElementById(`ai-input-${courseId}`);
+  const msgsEl = document.getElementById(`ai-messages-${courseId}`);
+  if (!inputEl || !msgsEl) return;
+  
+  const text = inputEl.value.trim();
+  if (!text) return;
+
+  // Append user message
+  const userMsgEl = document.createElement('div');
+  userMsgEl.style.alignSelf = 'flex-end';
+  userMsgEl.style.background = 'rgba(168, 85, 247, 0.2)';
+  userMsgEl.style.color = '#fff';
+  userMsgEl.style.padding = '8px 12px';
+  userMsgEl.style.borderRadius = '12px 12px 0 12px';
+  userMsgEl.style.maxWidth = '85%';
+  userMsgEl.style.wordBreak = 'break-word';
+  userMsgEl.textContent = text;
+  msgsEl.appendChild(userMsgEl);
+  msgsEl.scrollTop = msgsEl.scrollHeight;
+
+  inputEl.value = '';
+
+  // Append loading assistant message
+  const loadEl = document.createElement('div');
+  loadEl.style.alignSelf = 'flex-start';
+  loadEl.style.background = 'rgba(255,255,255,0.05)';
+  loadEl.style.color = '#aaa';
+  loadEl.style.padding = '8px 12px';
+  loadEl.style.borderRadius = '12px 12px 12px 0';
+  loadEl.style.maxWidth = '85%';
+  loadEl.style.fontStyle = 'italic';
+  loadEl.textContent = 'KlèCoach ap ekri...';
+  msgsEl.appendChild(loadEl);
+  msgsEl.scrollTop = msgsEl.scrollHeight;
+
+  try {
+    const systemPrompt = `Ou se yon Antrenè IA Pèsonèl ki rele "KlèCoach" ki entegre nan Libreri ClairMarché. W ap ede elèv la konprann kou sa a: "${courseName}". Pale an kreyòl ayisyen sèlman. Reponn ak anpil pasyans, ankouraje elèv la, ba li bon jan eksplikasyon senp, egzanp klè, e si se nesesè, ti kòd pratik. Rete kout, konsi e trè pedagojik.`;
+
+    const res = await fetch(API_BASE_URL + '/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        system: systemPrompt,
+        messages: [{ role: 'user', content: text }]
+      })
+    });
+
+    if (!res.ok) throw new Error('tutor connection failed');
+    const data = await res.json();
+    
+    // Remove loading
+    loadEl.remove();
+
+    // Append AI reply
+    const replyEl = document.createElement('div');
+    replyEl.style.alignSelf = 'flex-start';
+    replyEl.style.background = 'rgba(255,255,255,0.07)';
+    replyEl.style.color = '#e9d5ff';
+    replyEl.style.padding = '8px 12px';
+    replyEl.style.borderRadius = '12px 12px 12px 0';
+    replyEl.style.maxWidth = '85%';
+    replyEl.style.wordBreak = 'break-word';
+    
+    let replyText = "Eskize m, mwen gen yon ti pwoblèm koneksyon.";
+    if (data.content && data.content[0] && data.content[0].text) {
+      replyText = data.content[0].text;
+    }
+    replyEl.innerHTML = replyText.replace(/\n/g, '<br>');
+    msgsEl.appendChild(replyEl);
+    msgsEl.scrollTop = msgsEl.scrollHeight;
+
+  } catch (err) {
+    console.error(err);
+    loadEl.textContent = '❌ Erè rezo, verifye koneksyon w epi re-eseye.';
+  }
+}
+
+// ── DIPLOMA CERTIFICATE GENERATOR ──────────────────────────────────────────
+function printStudentCertificate(studentName, courseName) {
+  const dateStr = new Date().toLocaleDateString('fr-HT', {day:'2-digit',month:'long',year:'numeric'});
+  const certId = 'CERT-' + String(Math.floor(100000 + Math.random() * 900000));
+  
+  const w = window.open('', '_blank', 'width=900,height=650');
+  w.document.write(\`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <title>Diplom Sètifika - \${studentName}</title>
+      <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&family=Great+Vibes&display=swap" rel="stylesheet">
+      <style>
+        body {
+          margin: 0;
+          padding: 0;
+          background: #0f0a19;
+          font-family: 'Outfit', sans-serif;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          height: 100vh;
+          box-sizing: border-box;
+        }
+        .cert-container {
+          width: 820px;
+          height: 560px;
+          background: radial-gradient(circle, #1e152a 0%, #0d0816 100%);
+          border: 12px double #eab308;
+          padding: 30px;
+          box-sizing: border-box;
+          position: relative;
+          text-align: center;
+          color: #fff;
+          border-radius: 4px;
+          box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+          overflow: hidden;
+        }
+        .cert-container::before {
+          content: "";
+          position: absolute;
+          top: 0; left: 0; right: 0; bottom: 0;
+          border: 1px solid rgba(234, 179, 8, 0.3);
+          margin: 4px;
+          pointer-events: none;
+        }
+        .header {
+          font-size: 1.1rem;
+          color: #eab308;
+          font-weight: 900;
+          letter-spacing: 4px;
+          margin-top: 15px;
+          text-transform: uppercase;
+        }
+        .sub-header {
+          font-size: 0.65rem;
+          color: #c084fc;
+          letter-spacing: 2px;
+          margin-top: 5px;
+        }
+        .title {
+          font-family: 'Great Vibes', cursive;
+          font-size: 3.8rem;
+          color: #ffffff;
+          margin: 15px 0 10px;
+          text-shadow: 0 0 10px rgba(255,255,255,0.2);
+        }
+        .subtitle {
+          font-size: 0.85rem;
+          color: #aaa;
+          margin-bottom: 20px;
+          letter-spacing: 1px;
+        }
+        .student-name {
+          font-size: 2.2rem;
+          font-weight: 900;
+          color: #eab308;
+          margin-bottom: 10px;
+          border-bottom: 2px solid rgba(234, 179, 8, 0.2);
+          display: inline-block;
+          padding-bottom: 5px;
+          text-shadow: 0 0 5px rgba(234,179,8,0.2);
+        }
+        .reason {
+          font-size: 0.82rem;
+          color: #ccc;
+          line-height: 1.6;
+          max-width: 600px;
+          margin: 0 auto 20px;
+        }
+        .course-title {
+          font-size: 1.35rem;
+          font-weight: 800;
+          color: #c084fc;
+          margin-top: 5px;
+          display: block;
+        }
+        .footer-sec {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-end;
+          margin-top: 25px;
+          padding: 0 40px;
+        }
+        .sign-block {
+          text-align: center;
+          width: 180px;
+        }
+        .signature {
+          font-family: 'Great Vibes', cursive;
+          font-size: 1.5rem;
+          color: #e9d5ff;
+          height: 30px;
+          margin-bottom: 2px;
+        }
+        .sign-line {
+          border-top: 1px solid rgba(234, 179, 8, 0.4);
+          margin-top: 4px;
+          padding-top: 4px;
+          font-size: 0.65rem;
+          color: #999;
+          letter-spacing: 1px;
+        }
+        .badge {
+          width: 80px;
+          height: 80px;
+          border: 2px solid #eab308;
+          border-radius: 50%;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          background: rgba(234, 179, 8, 0.05);
+          font-size: 1.4rem;
+          color: #eab308;
+          box-shadow: 0 0 15px rgba(234,179,8,0.2);
+        }
+        .cert-id {
+          position: absolute;
+          bottom: 12px;
+          left: 20px;
+          font-family: monospace;
+          font-size: 0.6rem;
+          color: #555;
+        }
+        .print-btn {
+          position: absolute;
+          top: 15px;
+          right: 20px;
+          background: #eab308;
+          color: #1e1b4b;
+          border: none;
+          padding: 6px 12px;
+          border-radius: 6px;
+          font-weight: 700;
+          cursor: pointer;
+          font-size: 0.72rem;
+        }
+        @media print {
+          .print-btn { display: none; }
+          body { background: #fff; }
+          .cert-container {
+            box-shadow: none;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="cert-container">
+        <button class="print-btn" onclick="window.print()">🖨 ENPRIME SÈTIFIKA</button>
+        <div class="header">\${shopInfo.name || 'ClairMarché'} Academy</div>
+        <div class="sub-header">LEKÒL AK KESYON PWOFEZYONÈL DIJITAL</div>
+        <div class="title">Sètifika Reyalizasyon</div>
+        <div class="subtitle">Yo bay dokiman sa a pou verifye ke</div>
+        <div class="student-name">\${studentName}</div>
+        <div class="reason">
+          Te konplete avèk siksè tout modil fòmasyon yo, egzèsis pratik, ak evalyasyon ki asosye ak kou sa a:
+          <span class="course-title">\${courseName}</span>
+        </div>
+        <div class="footer-sec">
+          <div class="sign-block">
+            <div class="signature">Direction</div>
+            <div class="sign-line">DIREKTÈ LEKÒL LA</div>
+          </div>
+          <div class="badge">👑</div>
+          <div class="sign-block">
+            <div class="signature">KlèCoach</div>
+            <div class="sign-line">ASISTAN IA / AKADEMI</div>
+          </div>
+        </div>
+        <div class="cert-id">Verifikasyon inik ID: \${certId} · Fini dat: \${dateStr}</div>
+      </div>
+    </body>
+    </html>
+  \`);
+  w.document.close();
 }
 
 // ── AUTO INIT ─────────────────────────────────────────────────────────────
@@ -7345,6 +7950,294 @@ if (!sessionStorage.getItem('chat_opened')) {
     const badge = document.getElementById('fab-badge');
     if (badge) badge.style.display = 'flex';
   }, 5000);
+}
+
+// ── NATCASH / MONCASH PAYMENT SIMULATOR FUNCTIONS ────────────────────────
+function openPaymentSimulator() {
+  const shop = getSelectedOrderShop();
+  const phone = document.getElementById('order-phone').value.trim();
+  const paymentType = document.getElementById('order-payment').value;
+  const items = getOrderLines();
+
+  if (!shop || !phone || items.length === 0) {
+    showToast('⚠️ Ranpli boutik la, nimewo telefòn ak pwodwi yo anvan w simile peman!');
+    return;
+  }
+
+  const subtotal = items.reduce((s, i) => s + i.total, 0);
+  const distance = parseFloat(document.getElementById('order-distance').value) || 0;
+  const delivery = calculateDeliveryFee(distance);
+  const total = subtotal + delivery;
+
+  // Show the modal
+  const modal = document.getElementById('payment-simulator-modal');
+  modal.style.display = 'flex';
+
+  renderSimScreenInput(shop.name, total, paymentType, phone);
+}
+
+function closePaymentSimulator() {
+  document.getElementById('payment-simulator-modal').style.display = 'none';
+}
+
+function renderSimScreenInput(shopName, total, paymentType, phone) {
+  const container = document.getElementById('sim-screen-container');
+  const isMon = paymentType === 'MonCash';
+  const themeColor = isMon ? '#ef4444' : '#22c55e';
+  const brandName = isMon ? 'MonCash' : 'NatCash';
+
+  container.innerHTML = `
+    <div style="text-align: center; margin-top: 15px;">
+      <div style="font-size: 2.2rem; margin-bottom: 5px;">\${isMon ? '📱' : '💚'}</div>
+      <h2 style="color: #fff; font-size: 1.3rem; font-weight: 800; margin: 0 0 4px; font-family:'Outfit',sans-serif;">\${brandName}</h2>
+      <span style="font-size: 0.7rem; color: #94a3b8; letter-spacing: 2px; text-transform: uppercase; font-family:'Outfit',sans-serif;">Pòtay Peman Sekirize</span>
+    </div>
+
+    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 16px; margin: 20px 0; text-align: left;">
+      <div style="color: #94a3b8; font-size: 0.72rem; margin-bottom: 2px;">Voye bay:</div>
+      <div style="color: #fff; font-weight: 700; font-size: 0.95rem; margin-bottom: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family:'Outfit',sans-serif;">\${shopName}</div>
+      <div style="color: #94a3b8; font-size: 0.72rem; margin-bottom: 2px;">Montan pou Peye:</div>
+      <div style="color: \${themeColor}; font-weight: 900; font-size: 1.5rem; font-family:'Outfit',sans-serif;">\${total.toLocaleString('fr-HT')} HTG</div>
+    </div>
+
+    <div style="text-align: left;">
+      <label style="color: #94a3b8; font-size: 0.75rem; display: block; margin-bottom: 6px;">Nimewo Kont \${brandName} ou:</label>
+      <input type="tel" id="sim-phone-input" value="\${phone}" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; padding: 10px; color: #fff; text-align: center; font-size: 1.1rem; font-weight: 700; outline: none; font-family:'Outfit',sans-serif;">
+    </div>
+
+    <div style="margin-top: 30px; display: flex; flex-direction: column; gap: 8px;">
+      <button onclick="startSimUSSDPrompt('\${shopName.replace(/'/g, "\\\\'")}', \${total}, '\${paymentType}', '\${phone}')" style="background: \${themeColor}; border: none; color: #fff; padding: 12px; font-size: 0.9rem; font-weight: 700; border-radius: 12px; cursor: pointer; transition: opacity 0.2s; font-family:'Outfit',sans-serif;">
+        ⚡ Peye ak \${brandName}
+      </button>
+      <button onclick="closePaymentSimulator()" style="background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #94a3b8; padding: 10px; font-size: 0.8rem; border-radius: 12px; cursor: pointer; font-family:'Outfit',sans-serif;">
+        Anile
+      </button>
+    </div>
+  `;
+}
+
+let simPin = "";
+function startSimUSSDPrompt(shopName, total, paymentType, phone) {
+  simPin = "";
+  const container = document.getElementById('sim-screen-container');
+  const isMon = paymentType === 'MonCash';
+  const brandName = isMon ? 'MonCash' : 'NatCash';
+  const themeColor = isMon ? '#ef4444' : '#22c55e';
+
+  container.innerHTML = `
+    <div style="text-align: center; margin-top: 10px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
+      <!-- Mock USSD dialog window -->
+      <div style="background: #1e293b; border-radius: 16px; padding: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); text-align: left; margin-bottom: 20px;">
+        <h4 style="color: \${themeColor}; font-size: 0.8rem; font-weight: 800; margin: 0 0 8px; text-transform: uppercase; letter-spacing: 1px; font-family:'Outfit',sans-serif;">Similasyon USSD Sekirize</h4>
+        <p style="color: #cbd5e1; font-size: 0.8rem; line-height: 1.4; margin: 0 0 12px; font-family:'Outfit',sans-serif;">
+          Sistèm \${brandName} mande pou w konfime transfè **\${total.toLocaleString('fr-HT')} HTG** bay **\${shopName}**.<br>
+          Antre PIN 4 chif sekrè w la:
+        </p>
+        
+        <!-- PIN display dots -->
+        <div style="display: flex; justify-content: center; gap: 10px; margin: 10px 0;">
+          <div id="sim-dot-0" style="width: 14px; height: 14px; border-radius: 50%; border: 2px solid \${themeColor}; transition: all 0.2s;"></div>
+          <div id="sim-dot-1" style="width: 14px; height: 14px; border-radius: 50%; border: 2px solid \${themeColor}; transition: all 0.2s;"></div>
+          <div id="sim-dot-2" style="width: 14px; height: 14px; border-radius: 50%; border: 2px solid \${themeColor}; transition: all 0.2s;"></div>
+          <div id="sim-dot-3" style="width: 14px; height: 14px; border-radius: 50%; border: 2px solid \${themeColor}; transition: all 0.2s;"></div>
+        </div>
+      </div>
+
+      <!-- Numeric Dialpad -->
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 0 10px; margin-bottom: 10px;">
+        \${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => \`
+          <button onclick="pressSimDial(\${num}, '\${shopName.replace(/'/g, "\\\\\\'")}', \${total}, '\${paymentType}', '\${phone}')" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 50%; width: 54px; height: 54px; color: #fff; font-size: 1.3rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; margin: 0 auto; outline: none; transition: background 0.1s; font-family:'Outfit',sans-serif;">\${num}</button>
+        \`).join('')}
+        <button onclick="pressSimDial('C', '\${shopName.replace(/'/g, "\\\\\\'")}', \${total}, '\${paymentType}', '\${phone}')" style="background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); border-radius: 50%; width: 54px; height: 54px; color: #ef4444; font-size: 0.82rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; margin: 0 auto; outline: none; font-family:'Outfit',sans-serif;">Effacer</button>
+        <button onclick="pressSimDial(0, '\${shopName.replace(/'/g, "\\\\\\'")}', \${total}, '\${paymentType}', '\${phone}')" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 50%; width: 54px; height: 54px; color: #fff; font-size: 1.3rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; margin: 0 auto; outline: none; font-family:'Outfit',sans-serif;">0</button>
+        <button id="sim-btn-ok" onclick="submitSimUSSDPIN('\${shopName.replace(/'/g, "\\\\\\'")}', \DoubleQuote\DoubleQuote + \${total} + \DoubleQuote\DoubleQuote, '\${paymentType}', '\${phone}')" style="background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.3); border-radius: 50%; width: 54px; height: 54px; color: #22c55e; font-size: 0.82rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; margin: 0 auto; outline: none; opacity: 0.5; font-family:'Outfit',sans-serif;">Peye</button>
+      </div>
+
+      <button onclick="renderSimScreenInput('\${shopName.replace(/'/g, "\\\\\\'")}', \${total}, '\${paymentType}', '\${phone}')" style="background: transparent; border: none; color: #94a3b8; font-size: 0.8rem; cursor: pointer; margin-top: 5px; font-family:'Outfit',sans-serif;">« Tounen dèyè</button>
+    </div>
+  `;
+}
+
+function pressSimDial(val, shopName, total, paymentType, phone) {
+  const isMon = paymentType === 'MonCash';
+  const themeColor = isMon ? '#ef4444' : '#22c55e';
+  
+  if (val === 'C') {
+    if (simPin.length > 0) {
+      simPin = simPin.slice(0, -1);
+    }
+  } else {
+    if (simPin.length < 4) {
+      simPin += String(val);
+    }
+  }
+
+  // Update dots
+  for (let i = 0; i < 4; i++) {
+    const dot = document.getElementById('sim-dot-' + i);
+    if (dot) {
+      if (i < simPin.length) {
+        dot.style.background = themeColor;
+      } else {
+        dot.style.background = 'transparent';
+      }
+    }
+  }
+
+  // Toggle OK button state
+  const okBtn = document.getElementById('sim-btn-ok');
+  if (okBtn) {
+    if (simPin.length === 4) {
+      okBtn.style.opacity = '1';
+      okBtn.style.background = themeColor === '#ef4444' ? 'rgba(239,68,68,0.25)' : 'rgba(34,197,94,0.25)';
+    } else {
+      okBtn.style.opacity = '0.5';
+      okBtn.style.background = 'rgba(34,197,94,0.15)';
+    }
+  }
+}
+
+async function submitSimUSSDPIN(shopName, total, paymentType, phone) {
+  if (simPin.length !== 4) return;
+
+  const container = document.getElementById('sim-screen-container');
+  const isMon = paymentType === 'MonCash';
+  const themeColor = isMon ? '#ef4444' : '#22c55e';
+
+  container.innerHTML = `
+    <div style="text-align: center; margin-top: 120px; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+      <style>
+        @keyframes simPulse {
+          0% { transform: scale(0.95); opacity: 0.5; }
+          50% { transform: scale(1.05); opacity: 1; }
+          100% { transform: scale(0.95); opacity: 0.5; }
+        }
+      </style>
+      <div style="border: 4px solid rgba(255,255,255,0.05); border-left-color: \${themeColor}; width: 60px; height: 60px; border-radius: 50%; animation: librarySpin 1s linear infinite; margin-bottom: 20px;"></div>
+      <div style="color: #fff; font-size: 1.1rem; font-weight: 700; animation: simPulse 1.5s infinite; font-family:'Outfit',sans-serif;">Valide peman sou nwaj...</div>
+    </div>
+  `;
+
+  // Wait 1.8 seconds to simulate network API handshake
+  setTimeout(() => {
+    const txId = 'TX-' + (isMon ? 'MC' : 'NC') + '-' + String(Math.floor(100000 + Math.random() * 900000));
+    
+    // Generate simulated receipt canvas image
+    const dataUrl = generateSimulatedReceiptCanvas(shopName, Number(total), paymentType, phone, txId);
+    
+    // Update global state
+    simulatedPayment = true;
+    simulatedProofDataUrl = dataUrl;
+
+    // Display SUCCESS screen inside mobile simulator
+    container.innerHTML = `
+      <div style="text-align: center; margin-top: 40px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; align-items: center; height: 100%;">
+        <div style="margin-top: 40px;">
+          <div style="width: 80px; height: 80px; background: \${themeColor === '#ef4444' ? 'rgba(239,68,68,0.15)' : 'rgba(34,197,94,0.15)'}; border: 3px solid \${themeColor}; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; box-shadow: 0 0 20px \${themeColor}66;">
+            <span style="font-size: 2.5rem; color: \${themeColor}; font-weight:900;">✓</span>
+          </div>
+          
+          <h3 style="color: #fff; font-size: 1.4rem; font-weight: 800; margin: 0 0 6px; font-family:'Outfit',sans-serif;">Peman Konfime!</h3>
+          <p style="color: #94a3b8; font-size: 0.8rem; line-height: 1.4; margin: 0 0 20px; padding: 0 15px; font-family:'Outfit',sans-serif;">
+            Transaksyon an trete ak siksè.<br>
+            Kòd tranzaksyon: <span style="font-family: monospace; color: #fff; font-weight: bold;">\${txId}</span>
+          </p>
+        </div>
+
+        <div style="width: 100%; margin-bottom: 20px;">
+          <div style="background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px; padding: 12px; font-size: 0.72rem; color: #cbd5e1; line-height: 1.4; text-align: left; margin-bottom: 15px; font-family:'Outfit',sans-serif;">
+            ⚡ **Sistèm lan konekte dirèkteman!**<br>
+            Nou pre-ranpli montan an ak prèv peman an pou ou. Peze "✓ Anrejistre Commande" pou aktive kòmand lan enstantane.
+          </div>
+          
+          <button onclick="closePaymentSimulator()" style="width: 100%; background: \${themeColor}; border: none; color: #fff; padding: 12px; font-size: 0.9rem; font-weight: 700; border-radius: 12px; cursor: pointer; font-family:'Outfit',sans-serif;">
+            ✓ Fèmen Simulation
+          </button>
+        </div>
+      </div>
+    `;
+
+    // Fill the checkout inputs on the parent page
+    const paidInput = document.getElementById('order-paid-amount');
+    if (paidInput) {
+      paidInput.value = total;
+    }
+    
+    const label = document.getElementById('order-payment-proof');
+    if (label) {
+      label.value = "";
+    }
+    
+    renderOrderSummary();
+    showToast('⚡ Peman Otomatik simulation reyisi!');
+  }, 1800);
+}
+
+function generateSimulatedReceiptCanvas(shopName, amount, paymentType, phone, txId) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 400;
+  canvas.height = 300;
+  const ctx = canvas.getContext('2d');
+
+  // Background
+  ctx.fillStyle = '#1e1b4b'; // Sleek dark indigo background
+  ctx.fillRect(0, 0, 400, 300);
+
+  // Border
+  ctx.strokeStyle = paymentType === 'MonCash' ? '#eab308' : '#22c55e';
+  ctx.lineWidth = 6;
+  ctx.strokeRect(3, 3, 394, 294);
+
+  // Success circle
+  ctx.fillStyle = paymentType === 'MonCash' ? 'rgba(234, 179, 8, 0.15)' : 'rgba(34, 197, 94, 0.15)';
+  ctx.beginPath();
+  ctx.arc(200, 70, 35, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Draw Checkmark
+  ctx.strokeStyle = paymentType === 'MonCash' ? '#eab308' : '#22c55e';
+  ctx.lineWidth = 5;
+  ctx.beginPath();
+  ctx.moveTo(185, 70);
+  ctx.lineTo(195, 80);
+  ctx.lineTo(215, 60);
+  ctx.stroke();
+
+  // Receipt text
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 18px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText('TRANZAKSYON AKSEPTÈ', 200, 130);
+
+  ctx.fillStyle = '#a78bfa';
+  ctx.font = '13px Arial';
+  ctx.fillText(paymentType.toUpperCase() + ' GATEWAY SIMULATOR', 200, 150);
+
+  // Details box
+  ctx.fillStyle = 'rgba(255,255,255,0.05)';
+  ctx.fillRect(30, 170, 340, 100);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 14px Arial';
+  ctx.textAlign = 'left';
+  ctx.fillText('Boutik:', 45, 195);
+  ctx.fillText('Montan:', 45, 220);
+  ctx.fillText('Telefòn:', 45, 245);
+
+  ctx.textAlign = 'right';
+  ctx.fillText(shopName, 355, 195);
+  ctx.fillStyle = paymentType === 'MonCash' ? '#f59e0b' : '#4ade80';
+  ctx.fillText(amount.toLocaleString('fr-HT') + ' HTG', 355, 220);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText(phone, 355, 245);
+
+  // Tx ID at bottom
+  ctx.fillStyle = '#9ca3af';
+  ctx.font = '10px Courier New';
+  ctx.textAlign = 'center';
+  ctx.fillText('Tx ID: ' + txId + ' (Simile)', 200, 285);
+
+  return canvas.toDataURL('image/png');
 }
 
 </script>
