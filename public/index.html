@@ -7735,12 +7735,12 @@ function printStudentCertificate(studentName, courseName) {
   const certId = 'CERT-' + String(Math.floor(100000 + Math.random() * 900000));
   
   const w = window.open('', '_blank', 'width=900,height=650');
-  w.document.write(\`
+  w.document.write(`
     <!DOCTYPE html>
     <html>
     <head>
       <meta charset="UTF-8">
-      <title>Diplom Sètifika - \${studentName}</title>
+      <title>Diplom Sètifika - ${studentName}</title>
       <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&family=Great+Vibes&display=swap" rel="stylesheet">
       <style>
         body {
@@ -7901,14 +7901,14 @@ function printStudentCertificate(studentName, courseName) {
     <body>
       <div class="cert-container">
         <button class="print-btn" onclick="window.print()">🖨 ENPRIME SÈTIFIKA</button>
-        <div class="header">\${shopInfo.name || 'ClairMarché'} Academy</div>
+        <div class="header">${shopInfo.name || 'ClairMarché'} Academy</div>
         <div class="sub-header">LEKÒL AK KESYON PWOFEZYONÈL DIJITAL</div>
         <div class="title">Sètifika Reyalizasyon</div>
         <div class="subtitle">Yo bay dokiman sa a pou verifye ke</div>
-        <div class="student-name">\${studentName}</div>
+        <div class="student-name">${studentName}</div>
         <div class="reason">
           Te konplete avèk siksè tout modil fòmasyon yo, egzèsis pratik, ak evalyasyon ki asosye ak kou sa a:
-          <span class="course-title">\${courseName}</span>
+          <span class="course-title">${courseName}</span>
         </div>
         <div class="footer-sec">
           <div class="sign-block">
@@ -7921,11 +7921,11 @@ function printStudentCertificate(studentName, courseName) {
             <div class="sign-line">ASISTAN IA / AKADEMI</div>
           </div>
         </div>
-        <div class="cert-id">Verifikasyon inik ID: \${certId} · Fini dat: \${dateStr}</div>
+        <div class="cert-id">Verifikasyon inik ID: ${certId} · Fini dat: ${dateStr}</div>
       </div>
     </body>
     </html>
-  \`);
+  `);
   w.document.close();
 }
 
@@ -7988,26 +7988,26 @@ function renderSimScreenInput(shopName, total, paymentType, phone) {
 
   container.innerHTML = `
     <div style="text-align: center; margin-top: 15px;">
-      <div style="font-size: 2.2rem; margin-bottom: 5px;">\${isMon ? '📱' : '💚'}</div>
-      <h2 style="color: #fff; font-size: 1.3rem; font-weight: 800; margin: 0 0 4px; font-family:'Outfit',sans-serif;">\${brandName}</h2>
+      <div style="font-size: 2.2rem; margin-bottom: 5px;">${isMon ? '📱' : '💚'}</div>
+      <h2 style="color: #fff; font-size: 1.3rem; font-weight: 800; margin: 0 0 4px; font-family:'Outfit',sans-serif;">${brandName}</h2>
       <span style="font-size: 0.7rem; color: #94a3b8; letter-spacing: 2px; text-transform: uppercase; font-family:'Outfit',sans-serif;">Pòtay Peman Sekirize</span>
     </div>
 
     <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 16px; margin: 20px 0; text-align: left;">
       <div style="color: #94a3b8; font-size: 0.72rem; margin-bottom: 2px;">Voye bay:</div>
-      <div style="color: #fff; font-weight: 700; font-size: 0.95rem; margin-bottom: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family:'Outfit',sans-serif;">\${shopName}</div>
+      <div style="color: #fff; font-weight: 700; font-size: 0.95rem; margin-bottom: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family:'Outfit',sans-serif;">${shopName}</div>
       <div style="color: #94a3b8; font-size: 0.72rem; margin-bottom: 2px;">Montan pou Peye:</div>
-      <div style="color: \${themeColor}; font-weight: 900; font-size: 1.5rem; font-family:'Outfit',sans-serif;">\${total.toLocaleString('fr-HT')} HTG</div>
+      <div style="color: ${themeColor}; font-weight: 900; font-size: 1.5rem; font-family:'Outfit',sans-serif;">${total.toLocaleString('fr-HT')} HTG</div>
     </div>
 
     <div style="text-align: left;">
-      <label style="color: #94a3b8; font-size: 0.75rem; display: block; margin-bottom: 6px;">Nimewo Kont \${brandName} ou:</label>
-      <input type="tel" id="sim-phone-input" value="\${phone}" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; padding: 10px; color: #fff; text-align: center; font-size: 1.1rem; font-weight: 700; outline: none; font-family:'Outfit',sans-serif;">
+      <label style="color: #94a3b8; font-size: 0.75rem; display: block; margin-bottom: 6px;">Nimewo Kont ${brandName} ou:</label>
+      <input type="tel" id="sim-phone-input" value="${phone}" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; padding: 10px; color: #fff; text-align: center; font-size: 1.1rem; font-weight: 700; outline: none; font-family:'Outfit',sans-serif;">
     </div>
 
     <div style="margin-top: 30px; display: flex; flex-direction: column; gap: 8px;">
-      <button onclick="startSimUSSDPrompt('\${shopName.replace(/'/g, "\\\\'")}', \${total}, '\${paymentType}', '\${phone}')" style="background: \${themeColor}; border: none; color: #fff; padding: 12px; font-size: 0.9rem; font-weight: 700; border-radius: 12px; cursor: pointer; transition: opacity 0.2s; font-family:'Outfit',sans-serif;">
-        ⚡ Peye ak \${brandName}
+      <button onclick="startSimUSSDPrompt('${shopName.replace(/'/g, "\\'")}', ${total}, '${paymentType}', '${phone}')" style="background: ${themeColor}; border: none; color: #fff; padding: 12px; font-size: 0.9rem; font-weight: 700; border-radius: 12px; cursor: pointer; transition: opacity 0.2s; font-family:'Outfit',sans-serif;">
+        ⚡ Peye ak ${brandName}
       </button>
       <button onclick="closePaymentSimulator()" style="background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #94a3b8; padding: 10px; font-size: 0.8rem; border-radius: 12px; cursor: pointer; font-family:'Outfit',sans-serif;">
         Anile
@@ -8028,32 +8028,32 @@ function startSimUSSDPrompt(shopName, total, paymentType, phone) {
     <div style="text-align: center; margin-top: 10px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
       <!-- Mock USSD dialog window -->
       <div style="background: #1e293b; border-radius: 16px; padding: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); text-align: left; margin-bottom: 20px;">
-        <h4 style="color: \${themeColor}; font-size: 0.8rem; font-weight: 800; margin: 0 0 8px; text-transform: uppercase; letter-spacing: 1px; font-family:'Outfit',sans-serif;">Similasyon USSD Sekirize</h4>
+        <h4 style="color: ${themeColor}; font-size: 0.8rem; font-weight: 800; margin: 0 0 8px; text-transform: uppercase; letter-spacing: 1px; font-family:'Outfit',sans-serif;">Similasyon USSD Sekirize</h4>
         <p style="color: #cbd5e1; font-size: 0.8rem; line-height: 1.4; margin: 0 0 12px; font-family:'Outfit',sans-serif;">
-          Sistèm \${brandName} mande pou w konfime transfè **\${total.toLocaleString('fr-HT')} HTG** bay **\${shopName}**.<br>
+          Sistèm ${brandName} mande pou w konfime transfè **${total.toLocaleString('fr-HT')} HTG** bay **${shopName}**.<br>
           Antre PIN 4 chif sekrè w la:
         </p>
         
         <!-- PIN display dots -->
         <div style="display: flex; justify-content: center; gap: 10px; margin: 10px 0;">
-          <div id="sim-dot-0" style="width: 14px; height: 14px; border-radius: 50%; border: 2px solid \${themeColor}; transition: all 0.2s;"></div>
-          <div id="sim-dot-1" style="width: 14px; height: 14px; border-radius: 50%; border: 2px solid \${themeColor}; transition: all 0.2s;"></div>
-          <div id="sim-dot-2" style="width: 14px; height: 14px; border-radius: 50%; border: 2px solid \${themeColor}; transition: all 0.2s;"></div>
-          <div id="sim-dot-3" style="width: 14px; height: 14px; border-radius: 50%; border: 2px solid \${themeColor}; transition: all 0.2s;"></div>
+          <div id="sim-dot-0" style="width: 14px; height: 14px; border-radius: 50%; border: 2px solid ${themeColor}; transition: all 0.2s;"></div>
+          <div id="sim-dot-1" style="width: 14px; height: 14px; border-radius: 50%; border: 2px solid ${themeColor}; transition: all 0.2s;"></div>
+          <div id="sim-dot-2" style="width: 14px; height: 14px; border-radius: 50%; border: 2px solid ${themeColor}; transition: all 0.2s;"></div>
+          <div id="sim-dot-3" style="width: 14px; height: 14px; border-radius: 50%; border: 2px solid ${themeColor}; transition: all 0.2s;"></div>
         </div>
       </div>
 
       <!-- Numeric Dialpad -->
       <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 0 10px; margin-bottom: 10px;">
-        \${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => \`
-          <button onclick="pressSimDial(\${num}, '\${shopName.replace(/'/g, "\\\\\\'")}', \${total}, '\${paymentType}', '\${phone}')" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 50%; width: 54px; height: 54px; color: #fff; font-size: 1.3rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; margin: 0 auto; outline: none; transition: background 0.1s; font-family:'Outfit',sans-serif;">\${num}</button>
-        \`).join('')}
-        <button onclick="pressSimDial('C', '\${shopName.replace(/'/g, "\\\\\\'")}', \${total}, '\${paymentType}', '\${phone}')" style="background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); border-radius: 50%; width: 54px; height: 54px; color: #ef4444; font-size: 0.82rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; margin: 0 auto; outline: none; font-family:'Outfit',sans-serif;">Effacer</button>
-        <button onclick="pressSimDial(0, '\${shopName.replace(/'/g, "\\\\\\'")}', \${total}, '\${paymentType}', '\${phone}')" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 50%; width: 54px; height: 54px; color: #fff; font-size: 1.3rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; margin: 0 auto; outline: none; font-family:'Outfit',sans-serif;">0</button>
-        <button id="sim-btn-ok" onclick="submitSimUSSDPIN('\${shopName.replace(/'/g, "\\\\\\'")}', \DoubleQuote\DoubleQuote + \${total} + \DoubleQuote\DoubleQuote, '\${paymentType}', '\${phone}')" style="background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.3); border-radius: 50%; width: 54px; height: 54px; color: #22c55e; font-size: 0.82rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; margin: 0 auto; outline: none; opacity: 0.5; font-family:'Outfit',sans-serif;">Peye</button>
+        ${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => `
+          <button onclick="pressSimDial(${num}, '${shopName.replace(/'/g, "\\'")}', ${total}, '${paymentType}', '${phone}')" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 50%; width: 54px; height: 54px; color: #fff; font-size: 1.3rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; margin: 0 auto; outline: none; transition: background 0.1s; font-family:'Outfit',sans-serif;">${num}</button>
+        `).join('')}
+        <button onclick="pressSimDial('C', '${shopName.replace(/'/g, "\\'")}', ${total}, '${paymentType}', '${phone}')" style="background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); border-radius: 50%; width: 54px; height: 54px; color: #ef4444; font-size: 0.82rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; margin: 0 auto; outline: none; font-family:'Outfit',sans-serif;">Effacer</button>
+        <button onclick="pressSimDial(0, '${shopName.replace(/'/g, "\\'")}', ${total}, '${paymentType}', '${phone}')" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 50%; width: 54px; height: 54px; color: #fff; font-size: 1.3rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; margin: 0 auto; outline: none; font-family:'Outfit',sans-serif;">0</button>
+        <button id="sim-btn-ok" onclick="submitSimUSSDPIN('${shopName.replace(/'/g, "\\'")}', ${total}, '${paymentType}', '${phone}')" style="background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.3); border-radius: 50%; width: 54px; height: 54px; color: #22c55e; font-size: 0.82rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; margin: 0 auto; outline: none; opacity: 0.5; font-family:'Outfit',sans-serif;">Peye</button>
       </div>
 
-      <button onclick="renderSimScreenInput('\${shopName.replace(/'/g, "\\\\\\'")}', \${total}, '\${paymentType}', '\${phone}')" style="background: transparent; border: none; color: #94a3b8; font-size: 0.8rem; cursor: pointer; margin-top: 5px; font-family:'Outfit',sans-serif;">« Tounen dèyè</button>
+      <button onclick="renderSimScreenInput('${shopName.replace(/'/g, "\\'")}', ${total}, '${paymentType}', '${phone}')" style="background: transparent; border: none; color: #94a3b8; font-size: 0.8rem; cursor: pointer; margin-top: 5px; font-family:'Outfit',sans-serif;">« Tounen dèyè</button>
     </div>
   `;
 }
@@ -8113,7 +8113,7 @@ async function submitSimUSSDPIN(shopName, total, paymentType, phone) {
           100% { transform: scale(0.95); opacity: 0.5; }
         }
       </style>
-      <div style="border: 4px solid rgba(255,255,255,0.05); border-left-color: \${themeColor}; width: 60px; height: 60px; border-radius: 50%; animation: librarySpin 1s linear infinite; margin-bottom: 20px;"></div>
+      <div style="border: 4px solid rgba(255,255,255,0.05); border-left-color: ${themeColor}; width: 60px; height: 60px; border-radius: 50%; animation: librarySpin 1s linear infinite; margin-bottom: 20px;"></div>
       <div style="color: #fff; font-size: 1.1rem; font-weight: 700; animation: simPulse 1.5s infinite; font-family:'Outfit',sans-serif;">Valide peman sou nwaj...</div>
     </div>
   `;
@@ -8133,14 +8133,14 @@ async function submitSimUSSDPIN(shopName, total, paymentType, phone) {
     container.innerHTML = `
       <div style="text-align: center; margin-top: 40px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; align-items: center; height: 100%;">
         <div style="margin-top: 40px;">
-          <div style="width: 80px; height: 80px; background: \${themeColor === '#ef4444' ? 'rgba(239,68,68,0.15)' : 'rgba(34,197,94,0.15)'}; border: 3px solid \${themeColor}; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; box-shadow: 0 0 20px \${themeColor}66;">
-            <span style="font-size: 2.5rem; color: \${themeColor}; font-weight:900;">✓</span>
+          <div style="width: 80px; height: 80px; background: ${themeColor === '#ef4444' ? 'rgba(239,68,68,0.15)' : 'rgba(34,197,94,0.15)'}; border: 3px solid ${themeColor}; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; box-shadow: 0 0 20px ${themeColor}66;">
+            <span style="font-size: 2.5rem; color: ${themeColor}; font-weight:900;">✓</span>
           </div>
           
           <h3 style="color: #fff; font-size: 1.4rem; font-weight: 800; margin: 0 0 6px; font-family:'Outfit',sans-serif;">Peman Konfime!</h3>
           <p style="color: #94a3b8; font-size: 0.8rem; line-height: 1.4; margin: 0 0 20px; padding: 0 15px; font-family:'Outfit',sans-serif;">
             Transaksyon an trete ak siksè.<br>
-            Kòd tranzaksyon: <span style="font-family: monospace; color: #fff; font-weight: bold;">\${txId}</span>
+            Kòd tranzaksyon: <span style="font-family: monospace; color: #fff; font-weight: bold;">${txId}</span>
           </p>
         </div>
 
@@ -8150,7 +8150,7 @@ async function submitSimUSSDPIN(shopName, total, paymentType, phone) {
             Nou pre-ranpli montan an ak prèv peman an pou ou. Peze "✓ Anrejistre Commande" pou aktive kòmand lan enstantane.
           </div>
           
-          <button onclick="closePaymentSimulator()" style="width: 100%; background: \${themeColor}; border: none; color: #fff; padding: 12px; font-size: 0.9rem; font-weight: 700; border-radius: 12px; cursor: pointer; font-family:'Outfit',sans-serif;">
+          <button onclick="closePaymentSimulator()" style="width: 100%; background: ${themeColor}; border: none; color: #fff; padding: 12px; font-size: 0.9rem; font-weight: 700; border-radius: 12px; cursor: pointer; font-family:'Outfit',sans-serif;">
             ✓ Fèmen Simulation
           </button>
         </div>
