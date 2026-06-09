@@ -2217,7 +2217,7 @@ body {
     display:none; position:sticky; bottom:68px; left:0; right:0;
     padding:8px 16px; z-index:88;
   ">
-    <button onclick="openCheckout()" style="
+    <button onclick="showPemanPicker()" style="
       width:100%; padding:15px; border:none; border-radius:14px;
       background:linear-gradient(135deg,#f5c542,#e6a800); color:#000;
       font-family:'Outfit',sans-serif; font-size:1rem; font-weight:800;
@@ -3873,6 +3873,146 @@ let rapòDate = new Date();
 rapòDate.setHours(0,0,0,0);
 
 function saveDataOLD_REMOVED() {}
+
+// ═══════════════════════════════════════════════════════════════════
+// QUICK SALE — Fini Vant button directly calls these functions
+// No modal dependency — fully self-contained
+// ═══════════════════════════════════════════════════════════════════
+
+function showPemanPicker() {
+  var ids = Object.keys(cart).filter(function(k){ return cart[k] > 0; });
+  if (ids.length === 0) {
+    alert('⚠️ Ajoute pwodwi nan panye a dabò!');
+    return;
+  }
+
+  // Calculate total
+  var total = ids.reduce(function(s, k) {
+    var p = products.find(function(p){ return p.id == k; });
+    return s + (p ? p.price * cart[k] : 0);
+  }, 0);
+  var totalStr = total.toLocaleString('fr-HT');
+
+  // Remove existing picker if any
+  var old = document.getElementById('peman-picker-overlay');
+  if (old) old.remove();
+
+  // Build picker overlay
+  var overlay = document.createElement('div');
+  overlay.id = 'peman-picker-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;display:flex;align-items:flex-end;justify-content:center;';
+
+  overlay.innerHTML = '<div style="background:#1a1a2e;border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:24px 20px 48px;">'
+    + '<div style="width:40px;height:4px;background:#333;border-radius:2px;margin:0 auto 20px;"></div>'
+    + '<div style="font-family:Outfit,sans-serif;font-size:1.1rem;font-weight:800;color:#fff;margin-bottom:4px;">💳 Metòd Peman</div>'
+    + '<div style="font-family:Space Mono,monospace;font-size:1.4rem;color:#f5c542;font-weight:700;margin-bottom:20px;">' + totalStr + ' HTG</div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">'
+    + '<button onclick="doQuickSale(\'Cash\')" style="padding:16px 8px;border:none;border-radius:14px;background:linear-gradient(135deg,#4caf50,#2e7d32);color:#fff;font-family:Outfit,sans-serif;font-size:1rem;font-weight:800;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;"><span style="font-size:1.5rem;">💵</span>Cash</button>'
+    + '<button onclick="doQuickSale(\'NatCash\')" style="padding:16px 8px;border:none;border-radius:14px;background:linear-gradient(135deg,#f5c542,#e6a800);color:#000;font-family:Outfit,sans-serif;font-size:1rem;font-weight:800;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;"><span style="font-size:1.5rem;">💚</span>NatCash</button>'
+    + '<button onclick="doQuickSale(\'MonCash\')" style="padding:16px 8px;border:none;border-radius:14px;background:linear-gradient(135deg,#9c27b0,#6a1b9a);color:#fff;font-family:Outfit,sans-serif;font-size:1rem;font-weight:800;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;"><span style="font-size:1.5rem;">📱</span>MonCash</button>'
+    + '<button onclick="doQuickSale(\'Kredi\')" style="padding:16px 8px;border:none;border-radius:14px;background:linear-gradient(135deg,#ff5252,#c62828);color:#fff;font-family:Outfit,sans-serif;font-size:1rem;font-weight:800;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;"><span style="font-size:1.5rem;">📋</span>Kredi</button>'
+    + '</div>'
+    + '<button onclick="document.getElementById(\'peman-picker-overlay\').remove()" style="width:100%;padding:12px;border:none;border-radius:12px;background:#222;color:#888;font-family:Outfit,sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;">✕ Anile</button>'
+    + '</div>';
+
+  document.body.appendChild(overlay);
+}
+
+function doQuickSale(method) {
+  // Close picker
+  var picker = document.getElementById('peman-picker-overlay');
+  if (picker) picker.remove();
+
+  var ids = Object.keys(cart).filter(function(k){ return cart[k] > 0; });
+  if (ids.length === 0) { alert('Panye a vid!'); return; }
+
+  // Kredi: ask client name
+  var krediName = '';
+  if (method === 'Kredi') {
+    krediName = (prompt('Non kliyan kredi a:') || '').trim();
+    if (!krediName) { alert('Non kliyan obligatwa pou Kredi!'); return; }
+  }
+
+  // Build items
+  var items = ids.map(function(k) {
+    var p = products.find(function(p){ return p.id == k; });
+    if (!p) return null;
+    var cost = costPrices[p.id] || 0;
+    var qty = cart[k];
+    // Stock check
+    if (p.stock !== 999 && qty > p.stock) {
+      alert('⚠️ Stock pa sifi pou ' + p.name + '! Disponib: ' + p.stock);
+      return null;
+    }
+    return {
+      id: p.id, name: p.name, emoji: p.emoji || '📦', qty: qty,
+      price: p.price, cost: cost,
+      total: p.price * qty,
+      profit: (p.price - cost) * qty,
+      isDigital: p.isDigital || false,
+      accessLink: p.accessLink || '', deliveryMsg: p.deliveryMsg || ''
+    };
+  }).filter(Boolean);
+
+  if (items.length === 0) return;
+
+  var totalVant = items.reduce(function(s,i){ return s + i.total; }, 0);
+  var totalPft  = items.reduce(function(s,i){ return s + i.profit; }, 0);
+
+  var tx = {
+    id: Date.now(),
+    date: dateKey(new Date()),
+    time: new Date().toLocaleTimeString('fr-HT', {hour:'2-digit', minute:'2-digit'}),
+    channel: 'boutique', deviceId: deviceId,
+    cashierId: cashierSession.id || null,
+    cashier: cashierSession.name || 'Admin',
+    shift: cashierSession.shift || 'Jounen',
+    items: items, depans: [], totalVant: totalVant, totalDep: 0,
+    totalProfitProducts: totalPft,
+    pwòfi: totalPft, peman: method,
+    krediClientName: krediName, clientPhone: ''
+  };
+
+  // Deduct stock
+  items.forEach(function(item) {
+    var prod = products.find(function(p){ return p.id === item.id; });
+    if (prod && prod.stock !== 999) {
+      prod.stock = Math.max(0, prod.stock - item.qty);
+    }
+  });
+
+  // Add debt if kredi
+  if (method === 'Kredi') {
+    dets.push({
+      id: Date.now() + 1, type: 'dwe', non: krediName,
+      amt: totalVant, reste: totalVant,
+      nòt: 'Vant kredi: ' + items.map(function(i){ return i.name + ' x' + i.qty; }).join(', '),
+      date: '', freq: 'chak-jou', createdAt: dateKey(new Date()), payments: []
+    });
+  }
+
+  // Save
+  transactions.push(tx);
+  saveData();
+
+  // Reset cart
+  cart = {};
+  selectedPeman = 'Cash';
+  updateCartBar();
+  renderProducts();
+
+  // Success toast
+  var toast = document.getElementById('toast');
+  if (toast) {
+    toast.textContent = '✅ Vant sove! ' + items.length + ' atik — ' + totalVant.toLocaleString('fr-HT') + ' HTG [' + method + ']';
+    toast.classList.add('show');
+    setTimeout(function(){ toast.classList.remove('show'); }, 3500);
+  }
+
+  // Show receipt
+  try { showResi(tx); } catch(e) { console.warn('showResi error:', e); }
+  try { renderAdminPage(); } catch(e) {}
+}
 
 // Stock helpers
 function getStockSold(productId) {
@@ -6457,9 +6597,9 @@ function showResi(tx) {
 
   const itemsHtml = tx.items.map(i => `
     <div class="resi-item">
-      <div class="iname">${i.emoji} ${i.name}</div>
+      <div class="iname">${i.emoji || '\ud83d\udce6'} ${i.name || ''}</div>
       <div class="iqty">×${i.qty}</div>
-      <div class="itot">${i.total.toLocaleString('fr-HT')}</div>
+      <div class="itot">${(i.total||0).toLocaleString('fr-HT')}</div>
     </div>`).join('');
 
   document.getElementById('resi-sheet').innerHTML = `
