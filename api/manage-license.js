@@ -44,7 +44,7 @@ export default async function handler(req, res) {
 
     if (action === 'suspend') {
       await sbFetch(`licences?device_id=eq.${encodeURIComponent(deviceId)}`, 'PATCH',
-        { status: 'suspended', notes: notes || `Sispann pa admin — ${new Date().toLocaleDateString('fr-HT')}` });
+        { status: 'suspended', notes: notes || `Sispann pa admin — ${new Date().toLocaleDateString(['fr-HT', 'fr'])}` });
       return res.status(200).json({ success: true, action: 'suspended', version: 'v4' });
     }
 
