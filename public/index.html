@@ -4152,26 +4152,38 @@ function updateCartBar() {
 }
 
 
-// ── CHECKOUT ───────────────────────────────────────────────────────────────
+// ── CHECKOUT ──────────────────────────────────────────────────────────
 function openCheckout() {
-  renderModalCart();
-  renderModalSummary();
-  
-  // Detekte pwodwi dijital nan panyen an
-  const hasDigital = Object.keys(cart).some(k => {
-    if (cart[k] <= 0) return false;
-    const p = products.find(prod => prod.id == k);
-    return p && p.isDigital;
-  });
-  
-  const phoneBox = document.getElementById('digital-client-box');
-  const phoneInput = document.getElementById('digital-client-phone');
-  if (phoneInput) phoneInput.value = '';
-  if (phoneBox) {
-    phoneBox.style.display = hasDigital ? 'block' : 'none';
+  try {
+    const ids = Object.keys(cart).filter(k => cart[k] > 0);
+    if (ids.length === 0) {
+      showToast('⚠️ Ajoute pwodwi nan panye a dabò!');
+      return;
+    }
+    renderModalCart();
+    renderModalSummary();
+
+    // Reset kredi box
+    const krediBox = document.getElementById('kredi-client-box');
+    if (krediBox) krediBox.style.display = 'none';
+    const krediInput = document.getElementById('kredi-client-name');
+    if (krediInput) krediInput.value = '';
+
+    // Digital product phone box
+    const hasDigital = ids.some(k => {
+      const p = products.find(prod => prod.id == k);
+      return p && p.isDigital && cart[k] > 0;
+    });
+    const phoneBox = document.getElementById('digital-client-box');
+    const phoneInput = document.getElementById('digital-client-phone');
+    if (phoneInput) phoneInput.value = '';
+    if (phoneBox) phoneBox.style.display = hasDigital ? 'block' : 'none';
+
+    document.getElementById('checkout-modal').classList.add('open');
+  } catch(err) {
+    console.error('openCheckout error:', err);
+    showToast('❌ Erè ouverture: ' + err.message);
   }
-  
-  document.getElementById('checkout-modal').classList.add('open');
 }
 
 function closeCheckout() {
@@ -4439,22 +4451,23 @@ if (selectedPeman === 'Kredi') {
     });
   }
 
-  // Reset cart
+  // Reset panye
   cart = {};
-  document.getElementById('depans-rows').innerHTML = `
-    <div class="depans-row">
-      <input class="depans-input" type="text" placeholder="Rezon...">
-      <input class="depans-amt" type="number" placeholder="HTG">
-    </div>`;
   selectedPeman = 'Cash';
-  document.querySelectorAll('.peman-opt').forEach((e,i) => {
-    e.classList.toggle('active', i===0);
-  });
+  const depansRowsEl = document.getElementById('depans-rows');
+  if (depansRowsEl) depansRowsEl.innerHTML =
+    '<div class="depans-row"><input class="depans-input" type="text" placeholder="Rezon..."><input class="depans-amt" type="number" placeholder="HTG"></div>';
 
   updateCartBar();
   renderProducts();
   renderAdminPage();
   closeCheckout();
+
+  // ✅ Toast siksè klè
+  const totalStr = totalVant.toLocaleString('fr-HT');
+  const pemanStr = tx.peman;
+  showToast('✅ Vant sove! ' + items.length + ' atik — ' + totalStr + ' HTG [' + pemanStr + ']');
+
   showResi(tx);
 
   // Louvri modal livrezon imedya si gen pwodwi dijital
