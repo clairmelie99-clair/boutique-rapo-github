@@ -3235,12 +3235,12 @@ body {
 <div class="modal-overlay" id="checkout-modal">
   <div class="modal">
     <div class="modal-handle"></div>
-    <div class="modal-title">Konfime Vant la</div>
+    <div class="modal-title">🛒 Konfime Vant la</div>
 
     <div class="cart-items" id="modal-cart-items"></div>
 
     <div class="depans-section">
-      <div class="depans-title">🧾 Depans Jounen an</div>
+      <div class="depans-title">🧾 Depans (opsyonèl)</div>
       <div id="depans-rows">
         <div class="depans-row">
           <input class="depans-input" type="text" placeholder="Rezon (Transpò, Fèt...)">
@@ -3250,41 +3250,84 @@ body {
       <button class="add-depans-btn" onclick="addDepansRow()">+ Ajoute yon depans</button>
     </div>
 
-    <div class="peman-section">
-      <div class="peman-title">💳 Metòd Peman</div>
-      <div class="peman-opts">
-        <div class="peman-opt active" onclick="selectPeman(this,'Cash')">💵 Cash</div>
-        <div class="peman-opt" onclick="selectPeman(this,'NatCash')">💚 NatCash</div>
-        <div class="peman-opt" onclick="selectPeman(this,'Kredi')">📋 Kredi</div>
+    <div class="summary-box" id="modal-summary"></div>
+
+    <!-- ═══ BOUTON PEMAN RAPID ═══ -->
+    <div style="margin-top:16px;">
+      <div style="font-size:.75rem;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">💳 Chwazi Peman & Valide</div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <button onclick="confirmSaleWith('Cash')" style="
+          padding:14px 8px; border:none; border-radius:12px;
+          background:linear-gradient(135deg,#4caf50,#388e3c); color:#fff;
+          font-family:'Outfit',sans-serif; font-size:.95rem; font-weight:800;
+          cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:3px;
+          box-shadow:0 4px 12px rgba(76,175,80,.35);
+        ">
+          <span style="font-size:1.3rem;">💵</span>Cash
+        </button>
+
+        <button onclick="confirmSaleWith('NatCash')" style="
+          padding:14px 8px; border:none; border-radius:12px;
+          background:linear-gradient(135deg,#f5c542,#e6a800); color:#000;
+          font-family:'Outfit',sans-serif; font-size:.95rem; font-weight:800;
+          cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:3px;
+          box-shadow:0 4px 12px rgba(245,197,66,.35);
+        ">
+          <span style="font-size:1.3rem;">💚</span>NatCash
+        </button>
+
+        <button onclick="confirmSaleWith('MonCash')" style="
+          padding:14px 8px; border:none; border-radius:12px;
+          background:linear-gradient(135deg,#9c27b0,#6a1b9a); color:#fff;
+          font-family:'Outfit',sans-serif; font-size:.95rem; font-weight:800;
+          cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:3px;
+          box-shadow:0 4px 12px rgba(156,39,176,.35);
+        ">
+          <span style="font-size:1.3rem;">📱</span>MonCash
+        </button>
+
+        <button onclick="openKrediFlow()" style="
+          padding:14px 8px; border:none; border-radius:12px;
+          background:linear-gradient(135deg,#ff5252,#c62828); color:#fff;
+          font-family:'Outfit',sans-serif; font-size:.95rem; font-weight:800;
+          cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:3px;
+          box-shadow:0 4px 12px rgba(255,82,82,.35);
+        ">
+          <span style="font-size:1.3rem;">📋</span>Kredi
+        </button>
+      </div>
+
+      <!-- Champ Kredi (kache pa defo) -->
+      <div id="kredi-client-box" style="display:none; margin-top:12px;">
+        <div style="font-size:.75rem;color:#ff5252;font-weight:700;margin-bottom:6px;">👤 Non kliyan kredi *</div>
+        <input
+          type="text"
+          id="kredi-client-name"
+          placeholder="Antre non kliyan an..."
+          style="width:100%; background:var(--s2); border:1px solid #ff5252; border-radius:10px; padding:12px; color:var(--white); font-family:'Outfit',sans-serif; font-size:.9rem; outline:none; box-sizing:border-box;">
+        <button onclick="confirmSaleWith('Kredi')" style="
+          width:100%; margin-top:8px; padding:12px; border:none; border-radius:10px;
+          background:#ff5252; color:#fff; font-family:'Outfit',sans-serif;
+          font-size:.95rem; font-weight:800; cursor:pointer;
+        ">✓ Konfime Kredi</button>
+      </div>
+
+      <!-- Champ telefòn dijital -->
+      <div id="digital-client-box" style="display:none; margin-top:12px;">
+        <div style="font-size:.75rem;color:#c084fc;font-weight:700;margin-bottom:6px;">📱 Nimewo Telefòn Kliyan *</div>
+        <input
+          type="tel"
+          id="digital-client-phone"
+          placeholder="Egzanp: +50937010203"
+          style="width:100%; background:var(--s2); border:1px solid #a855f7; border-radius:10px; padding:12px; color:var(--white); font-family:'Outfit',sans-serif; font-size:.9rem; outline:none; box-sizing:border-box;">
       </div>
     </div>
 
-    <div id="kredi-client-box" style="display:none; margin-bottom:16px;">
-      <div class="peman-title">👤 Non kliyan kredi</div>
-      <input 
-        type="text" 
-        id="kredi-client-name" 
-        placeholder="Antre non kliyan an..."
-        style="width:100%; background:var(--s2); border:1px solid var(--border); border-radius:10px; padding:12px; color:var(--white); font-family:'Outfit',sans-serif; font-size:0.9rem; outline:none;">
-    </div>
-
-    <div id="digital-client-box" style="display:none; margin-bottom:16px;">
-      <div class="peman-title" style="color: #c084fc;">📱 Nimewo Telefòn Kliyan (Pou Aksè / WhatsApp)</div>
-      <input 
-        type="tel" 
-        id="digital-client-phone" 
-        placeholder="Egzanp: +50937010203"
-        style="width:100%; background:var(--s2); border:1px solid #a855f7; border-radius:10px; padding:12px; color:var(--white); font-family:'Outfit',sans-serif; font-size:0.9rem; outline:none; transition: all 0.3s;"
-        onfocus="this.style.borderColor='#c084fc'; this.style.boxShadow='0 0 8px rgba(168,85,247,0.3)';"
-        onblur="this.style.borderColor='#a855f7'; this.style.boxShadow='none';">
-    </div>
-
-    <div class="summary-box" id="modal-summary"></div>
-
-    <button class="confirm-btn" onclick="confirmSale()">✓ Konfime &amp; Anrejistre</button>
-    <button class="cancel-btn" onclick="closeCheckout()">Anile</button>
+    <button class="cancel-btn" onclick="closeCheckout()" style="margin-top:14px;">✕ Anile</button>
   </div>
 </div>
+
 
 <!-- ══ CHATBOT FAB ═══════════════════════════════════════════════════════ -->
 <button class="chatbot-fab" onclick="openChatbot()" id="chatbot-fab" title="Asistan IA">
@@ -4135,7 +4178,11 @@ function closeCheckout() {
 
 function renderModalCart() {
   const ids = Object.keys(cart).filter(k => cart[k] > 0);
-  if (ids.length === 0) { closeCheckout(); return; }
+  if (ids.length === 0) {
+    document.getElementById('modal-cart-items').innerHTML =
+      '<div style="text-align:center;padding:20px;color:#555;">Panye a vid. Ajoute pwodwi dabò.</div>';
+    return;
+  }
 
   document.getElementById('modal-cart-items').innerHTML = ids.map(k => {
     const p = products.find(p => p.id == k);
@@ -4240,10 +4287,39 @@ function renderModalSummary() {
 }
 
 function confirmSale() {
+  try { _doConfirmSale(); } catch(e) {
+    console.error('confirmSale error:', e);
+    showToast('❌ Erè: ' + e.message);
+  }
+}
+
+// One-tap sale with chosen payment method
+function confirmSaleWith(method) {
+  selectedPeman = method;
+  try { _doConfirmSale(); } catch(e) {
+    console.error('confirmSaleWith error:', e);
+    showToast('❌ Erè: ' + e.message);
+  }
+}
+
+function openKrediFlow() {
+  const box = document.getElementById('kredi-client-box');
+  if (box) {
+    box.style.display = box.style.display === 'none' ? 'block' : 'none';
+    if (box.style.display === 'block') {
+      const inp = document.getElementById('kredi-client-name');
+      if (inp) { inp.value = ''; inp.focus(); }
+    }
+  }
+}
+
+
+function _doConfirmSale() {
   const ids = Object.keys(cart).filter(k => cart[k] > 0);
-  if (ids.length === 0) return;
+  if (ids.length === 0) { showToast('⚠️ Panye a vid!'); return; }
 
   let krediClientName = '';
+
 
 if (selectedPeman === 'Kredi') {
   krediClientName = document.getElementById('kredi-client-name').value.trim();
