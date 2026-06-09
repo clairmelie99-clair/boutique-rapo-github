@@ -921,10 +921,12 @@ body {
 /* ── RESI / FAKTI MODAL ── */
 .resi-overlay {
   display:none; position:fixed; inset:0;
-  background:rgba(0,0,0,0.92); z-index:400;
+  background:rgba(0,0,0,0.92); z-index:99998;
   align-items:center; justify-content:center; padding:16px;
+  overflow-y:auto;
 }
 .resi-overlay.open { display:flex; }
+
 
 .resi-sheet {
   background:#fff; color:#111; border-radius:12px;
@@ -4015,13 +4017,17 @@ function doQuickSale(method) {
   selectedPeman = 'Cash';
   updateCartBar();
   renderProducts();
-  try { renderAdminPage(); } catch(e){}
 
-  // Success toast
+  // Success toast — show first
   _qToast('✅ Vant sove! ' + items.length + ' atik — ' + totalVant.toLocaleString('fr-HT') + ' HTG [' + method + ']');
 
-  // Show receipt
-  showResi(tx);
+  // Show receipt after a short delay so toast is visible
+  setTimeout(function() {
+    showResi(tx);
+  }, 350);
+
+  // Refresh admin data silently
+  try { renderAdminPage(); } catch(e){}
 }
 
 // Quick toast helper (works even before DOM is fully ready)
@@ -6611,6 +6617,13 @@ function saveCostPrice(id, val) {
 let lastTx = null;
 
 function showResi(tx) {
+  // Always reload shopInfo fresh from storage
+  var _shop = JSON.parse(localStorage.getItem('br_shop') || '{}');
+  var shopName = (_shop.name && _shop.name.length > 1) ? _shop.name : (shopInfo.name || 'Ma Boutique');
+  var shopTel  = _shop.tel  || shopInfo.tel  || '';
+  var shopAddr = _shop.addr || shopInfo.addr || '';
+  var shopMsg  = _shop.msg  || shopInfo.msg  || 'Mèsi pou konfyans ou!';
+
   lastTx = tx;
   const resiNum = 'BR-' + String(tx.id).slice(-6);
   const dateStr = new Date().toLocaleDateString('fr-HT', {day:'2-digit',month:'2-digit',year:'numeric'});
@@ -6618,16 +6631,16 @@ function showResi(tx) {
 
   const itemsHtml = tx.items.map(i => `
     <div class="resi-item">
-      <div class="iname">${i.emoji || '\ud83d\udce6'} ${i.name || ''}</div>
+      <div class="iname">${i.emoji || '📦'} ${i.name || ''}</div>
       <div class="iqty">×${i.qty}</div>
       <div class="itot">${(i.total||0).toLocaleString('fr-HT')}</div>
     </div>`).join('');
 
   document.getElementById('resi-sheet').innerHTML = `
     <div class="resi-header">
-      <div class="resi-shop-name">${shopInfo.name || 'Ma Boutique'}</div>
-      ${shopInfo.addr ? `<div class="resi-shop-sub">${shopInfo.addr}</div>` : ''}
-      ${shopInfo.tel  ? `<div class="resi-shop-sub">📞 ${shopInfo.tel}</div>` : ''}
+      <div class="resi-shop-name">${shopName}</div>
+      ${shopAddr ? `<div class="resi-shop-sub">${shopAddr}</div>` : ''}
+      ${shopTel  ? `<div class="resi-shop-sub">📞 ${shopTel}</div>` : ''}
       <div class="resi-num">Resi #${resiNum} · ${dateStr} ${timeStr}</div>
     </div>
 
@@ -6652,7 +6665,7 @@ function showResi(tx) {
         <span class="resi-total-val">${tx.totalVant.toLocaleString('fr-HT')} HTG</span>
       </div>
 
-      <div class="resi-merci">${shopInfo.msg || 'Mèsi pou konfyans ou!'}</div>
+      <div class="resi-merci">${shopMsg}</div>
     </div>
 
     <div class="resi-actions">
