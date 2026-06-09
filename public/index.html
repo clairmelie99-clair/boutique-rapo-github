@@ -1849,6 +1849,59 @@ body {
   <button class="install-btn-no" onclick="dismissInstall()">✕</button>
 </div>
 
+<!-- ══ FIRST-RUN SETUP SCREEN ════════════════════════════════════════════ -->
+<div id="first-run-setup" style="
+  position:fixed; inset:0; background:#0d0d0d; z-index:10000;
+  display:none; align-items:center; justify-content:center; padding:20px;
+">
+  <div style="
+    width:100%; max-width:360px; background:#161616; border:1px solid #333;
+    border-radius:22px; padding:30px 24px; text-align:center;
+    box-shadow:0 20px 60px rgba(0,0,0,.5);
+  ">
+    <div style="font-size:2.6rem;margin-bottom:8px;">🏪</div>
+    <div style="font-size:1.35rem;font-weight:800;color:#f5c542;margin-bottom:4px;">Bienveni nan ClairMarché</div>
+    <div style="font-size:.8rem;color:#777;margin-bottom:24px;">Konfigire boutik ou a anvan w kòmanse.</div>
+
+    <div style="text-align:left;margin-bottom:14px;">
+      <label style="font-size:.75rem;color:#aaa;font-weight:600;display:block;margin-bottom:6px;">Nom Boutik la</label>
+      <input id="setup-shop-name" type="text" placeholder="Ex: Boutik Rapo" maxlength="40" style="
+        width:100%;background:#222;border:1px solid #333;border-radius:10px;
+        padding:12px 14px;color:#fff;font-family:'Outfit',sans-serif;font-size:.95rem;outline:none;
+        box-sizing:border-box;
+      ">
+    </div>
+
+    <div style="text-align:left;margin-bottom:14px;">
+      <label style="font-size:.75rem;color:#aaa;font-weight:600;display:block;margin-bottom:6px;">Kreye PIN Admin (min. 4 chif)</label>
+      <input id="setup-pin" type="password" inputmode="numeric" placeholder="••••" maxlength="6" style="
+        width:100%;background:#222;border:1px solid #333;border-radius:10px;
+        padding:12px 14px;color:#f5c542;font-family:'Space Mono',monospace;font-size:1.3rem;
+        text-align:center;letter-spacing:6px;outline:none;box-sizing:border-box;
+      ">
+    </div>
+
+    <div style="text-align:left;margin-bottom:20px;">
+      <label style="font-size:.75rem;color:#aaa;font-weight:600;display:block;margin-bottom:6px;">Konfime PIN Admin</label>
+      <input id="setup-pin-confirm" type="password" inputmode="numeric" placeholder="••••" maxlength="6" style="
+        width:100%;background:#222;border:1px solid #333;border-radius:10px;
+        padding:12px 14px;color:#f5c542;font-family:'Space Mono',monospace;font-size:1.3rem;
+        text-align:center;letter-spacing:6px;outline:none;box-sizing:border-box;
+      " onkeydown="if(event.key==='Enter') completeFirstRunSetup()">
+    </div>
+
+    <div id="setup-error" style="display:none;color:#ff3d57;font-size:.82rem;font-weight:700;margin-bottom:14px;"></div>
+
+    <button onclick="completeFirstRunSetup()" style="
+      width:100%;padding:14px;border:none;border-radius:12px;
+      background:#f5c542;color:#000;font-family:'Outfit',sans-serif;
+      font-size:1rem;font-weight:700;cursor:pointer;transition:all 0.2s;
+    " onmouseover="this.style.background='#e6a800'" onmouseout="this.style.background='#f5c542'">
+      ✅ Kòmanse Itilize App la
+    </button>
+  </div>
+</div>
+
 <!-- ══ PIN LOCK SCREEN ════════════════════════════════════════════════════ -->
 <div id="pin-lock" style="
   position:fixed; inset:0; background:#0d0d0d; z-index:9999;
@@ -1948,8 +2001,7 @@ body {
     </div>
 
     <div style="font-size:.68rem;color:#555;margin-top:18px;line-height:1.5;">
-      PIN default Admin: 1234<br>
-      Ou ka chanje l nan Paramèt.
+      Ou ka chanje PIN ou nan Paramèt.
     </div>
   </div>
 </div>
@@ -3062,11 +3114,68 @@ const isCapacitor = !!window.Capacitor ||
 const API_BASE_URL = isCapacitor ? 'https://boutique-rapo-github.vercel.app' : '';
 
 // ── STATE ──────────────────────────────────────────────────────────────────
-let appPin = localStorage.getItem('br_pin') || '1234';
+let appPin = localStorage.getItem('br_pin') || null;
 let adminPin = localStorage.getItem('br_admin_pin') || appPin;
 let isUnlocked = sessionStorage.getItem('br_unlocked') === 'yes';
 
 let selectedLoginRole = 'admin';
+
+// ── FIRST-RUN SETUP ────────────────────────────────────────────────────────
+function checkFirstRun() {
+  const setupDone = localStorage.getItem('br_setup_done');
+  const pinLock = document.getElementById('pin-lock');
+  const setupScreen = document.getElementById('first-run-setup');
+
+  if (!setupDone || !appPin) {
+    // Show first-run setup, hide PIN lock
+    if (setupScreen) setupScreen.style.display = 'flex';
+    if (pinLock) pinLock.style.display = 'none';
+  } else {
+    // Already configured — show PIN lock as normal
+    if (setupScreen) setupScreen.style.display = 'none';
+    if (pinLock) pinLock.style.display = 'flex';
+  }
+}
+
+function completeFirstRunSetup() {
+  const shopNameEl = document.getElementById('setup-shop-name');
+  const pinEl = document.getElementById('setup-pin');
+  const pinConfirmEl = document.getElementById('setup-pin-confirm');
+  const errorEl = document.getElementById('setup-error');
+
+  const shopName = shopNameEl ? shopNameEl.value.trim() : '';
+  const pin = pinEl ? pinEl.value.trim() : '';
+  const pinConfirm = pinConfirmEl ? pinConfirmEl.value.trim() : '';
+
+  const showSetupError = (msg) => {
+    if (errorEl) { errorEl.textContent = msg; errorEl.style.display = 'block'; }
+  };
+
+  if (!shopName) { showSetupError('Tanpri antre non boutik la.'); return; }
+  if (!pin || pin.length < 4) { showSetupError('PIN dwe gen omwen 4 chif.'); return; }
+  if (!/^\d+$/.test(pin)) { showSetupError('PIN dwe sèlman gen chif.'); return; }
+  if (pin !== pinConfirm) { showSetupError('PIN konfirmasyon an pa menm ak PIN ou te antre a.'); return; }
+
+  // Save setup
+  localStorage.setItem('br_shop_name', shopName);
+  localStorage.setItem('br_pin', pin);
+  localStorage.setItem('br_admin_pin', pin);
+  localStorage.setItem('br_setup_done', 'yes');
+
+  // Update runtime state
+  appPin = pin;
+  adminPin = pin;
+
+  // Apply shop name if branding exists
+  const brandEl = document.getElementById('shop-name-display');
+  if (brandEl) brandEl.textContent = shopName;
+
+  // Hide setup, show login
+  const setupScreen = document.getElementById('first-run-setup');
+  const pinLock = document.getElementById('pin-lock');
+  if (setupScreen) setupScreen.style.display = 'none';
+  if (pinLock) { pinLock.style.display = 'flex'; showRoleSelect(); }
+}
 
 function showLoginScreen(role) {
   selectedLoginRole = role;
@@ -3130,7 +3239,7 @@ function unlockApp() {
   error.style.display = 'none';
   
   if (selectedLoginRole === 'admin') {
-    if (typedPin === appPin) {
+    if (typedPin === adminPin) {
       cashierSession = { role: 'admin', name: 'Admin', shift: 'Jounen' };
       localStorage.setItem('br_cashier', JSON.stringify(cashierSession));
       sessionStorage.setItem('br_admin_unlocked', 'yes');
@@ -3356,19 +3465,20 @@ function formatDate(d) {
 
 // ── INIT ───────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  const pinLock = document.getElementById('pin-lock');
   const pinInput = document.getElementById('pin-input');
   loadBrandingForm();
-
-  if (pinLock) {
-    pinLock.style.display = isUnlocked ? 'none' : 'flex';
-  }
 
   if (isUnlocked) {
     const header = document.getElementById('app-header');
     const sidebar = document.getElementById('sidebar');
     if (header) header.style.display = 'flex';
     if (sidebar) sidebar.style.display = 'block';
+    const pinLock = document.getElementById('pin-lock');
+    const setupScreen = document.getElementById('first-run-setup');
+    if (pinLock) pinLock.style.display = 'none';
+    if (setupScreen) setupScreen.style.display = 'none';
+  } else {
+    checkFirstRun();
   }
 
   if (!isUnlocked && pinInput) {
