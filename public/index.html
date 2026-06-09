@@ -2192,6 +2192,16 @@ body {
   <div class="topbar">
     <div class="topbar-title">ClairMarché<span> POS</span></div>
     <div class="topbar-date" id="top-date"></div>
+    <!-- Cart quick-access button — always visible in topbar -->
+    <button id="topbar-cart-btn" onclick="openCheckout()" style="
+      display:none; align-items:center; gap:6px;
+      background:var(--gold); border:none; border-radius:20px;
+      padding:7px 14px; cursor:pointer; font-family:'Outfit',sans-serif;
+      font-size:.82rem; font-weight:800; color:#000;
+      flex-shrink:0; transition:all .2s;
+    ">
+      🛒 <span id="topbar-cart-count">0</span>
+    </button>
   </div>
 
   <div class="search-box">
@@ -2201,6 +2211,23 @@ body {
 
   <div class="cat-tabs" id="cat-tabs"></div>
   <div class="products-grid" id="products-grid"></div>
+
+  <!-- Sticky bottom fallback button — shows when cart has items -->
+  <div id="vann-footer-btn-wrap" style="
+    display:none; position:sticky; bottom:68px; left:0; right:0;
+    padding:8px 16px; z-index:88;
+  ">
+    <button onclick="openCheckout()" style="
+      width:100%; padding:15px; border:none; border-radius:14px;
+      background:linear-gradient(135deg,#f5c542,#e6a800); color:#000;
+      font-family:'Outfit',sans-serif; font-size:1rem; font-weight:800;
+      cursor:pointer; box-shadow:0 4px 20px rgba(245,197,66,.4);
+      display:flex; align-items:center; justify-content:space-between;
+    ">
+      <span>🛒 Fini Vant — <span id="vann-footer-count">0</span> atik</span>
+      <span id="vann-footer-total" style="font-family:'Space Mono',monospace;">0 HTG</span>
+    </button>
+  </div>
 </div>
 
 <!-- ══ PAGE: RAPÒ ══════════════════════════════════════════════════════════ -->
@@ -4048,17 +4075,37 @@ function updateCartBar() {
   const ids = Object.keys(cart).filter(k => cart[k] > 0);
   const totalQty = ids.reduce((s,k) => s + cart[k], 0);
   const totalHTG = ids.reduce((s,k) => {
-    const p = products.find(p=>p.id==k);
+    const p = products.find(p => p.id == k);
     return s + (p ? p.price * cart[k] : 0);
   }, 0);
+  const htgStr = totalHTG.toLocaleString('fr-HT') + ' HTG';
 
+  // Original floating bar
   document.getElementById('cart-count').textContent = totalQty;
-  document.getElementById('cart-total').textContent = totalHTG.toLocaleString('fr-HT') + ' HTG';
-
+  document.getElementById('cart-total').textContent = htgStr;
   const bar = document.getElementById('cart-bar');
   if (totalQty > 0) bar.classList.add('visible');
   else bar.classList.remove('visible');
+
+  // Topbar button
+  const topBtn = document.getElementById('topbar-cart-btn');
+  const topCount = document.getElementById('topbar-cart-count');
+  if (topBtn) {
+    topBtn.style.display = totalQty > 0 ? 'flex' : 'none';
+    if (topCount) topCount.textContent = totalQty;
+  }
+
+  // Sticky footer button
+  const footerWrap = document.getElementById('vann-footer-btn-wrap');
+  const footerCount = document.getElementById('vann-footer-count');
+  const footerTotal = document.getElementById('vann-footer-total');
+  if (footerWrap) {
+    footerWrap.style.display = totalQty > 0 ? 'block' : 'none';
+    if (footerCount) footerCount.textContent = totalQty;
+    if (footerTotal) footerTotal.textContent = htgStr;
+  }
 }
+
 
 // ── CHECKOUT ───────────────────────────────────────────────────────────────
 function openCheckout() {
