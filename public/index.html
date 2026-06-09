@@ -3856,15 +3856,17 @@ function saveBranding() {
   showToast('✅ Branding sove!');
 }
 
-let products = JSON.parse(localStorage.getItem('br_products') || '[]');
-
-let transactions = JSON.parse(localStorage.getItem('br_tx') || '[]');
+let products     = JSON.parse(localStorage.getItem('br_products') || '[]');
+let transactions = JSON.parse(localStorage.getItem('br_tx')       || '[]');
 let standaloneDepans = JSON.parse(localStorage.getItem('br_depans') || '[]');
-let onlineOrders = JSON.parse(localStorage.getItem('br_orders') || '[]');
+let onlineOrders    = JSON.parse(localStorage.getItem('br_orders')   || '[]');
 let deliverySettings = JSON.parse(localStorage.getItem('br_delivery') || '{"base":100,"stepPrice":50,"stepDistance":5}');
-let cashierSession = JSON.parse(localStorage.getItem('br_cashier') || '{"role":"admin","name":"Admin","shift":"Jounen"}');
-let cashiers = JSON.parse(localStorage.getItem('br_cashiers') || '[]');
-let deviceRegistry = JSON.parse(localStorage.getItem('br_devices') || '[]');
+let cashierSession  = JSON.parse(localStorage.getItem('br_cashier')  || '{"role":"admin","name":"Admin","shift":"Jounen"}');
+let cashiers        = JSON.parse(localStorage.getItem('br_cashiers') || '[]');
+let deviceRegistry  = JSON.parse(localStorage.getItem('br_devices')  || '[]');
+// Cost prices & debts — declared here to avoid TDZ crashes
+let costPrices = JSON.parse(localStorage.getItem('br_costs') || '{}');
+let dets       = JSON.parse(localStorage.getItem('br_dets')  || '[]');
 let cart = {};
 let selectedPeman = 'Cash';
 let rapòDate = new Date();
@@ -6401,7 +6403,7 @@ function loadShopInfoForm() {
 }
 
 // ── COST PRICE (maji reyèl) ────────────────────────────────────────────────
-let costPrices = JSON.parse(localStorage.getItem('br_costs') || '{}');
+// costPrices declared at top of script — see state block above
 // costPrices = { productId: costPrice }
 
 function renderCostPriceList() {
@@ -6754,7 +6756,7 @@ function printRapòMwa() {
 }
 
 // ── DÈT ────────────────────────────────────────────────────────────────────
-let dets = JSON.parse(localStorage.getItem('br_dets') || '[]');
+// dets declared at top of script — see state block
 // det = { id, type:'dwe'|'nou', non, amt, reste, nòt, date, freq, createdAt, payments:[] }
 
 let activeDetTab = 'dwe';
