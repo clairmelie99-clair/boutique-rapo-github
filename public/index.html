@@ -1849,58 +1849,200 @@ body {
   <button class="install-btn-no" onclick="dismissInstall()">✕</button>
 </div>
 
-<!-- ══ FIRST-RUN SETUP SCREEN ════════════════════════════════════════════ -->
+<!-- ══ FIRST-RUN ONBOARDING ═════════════════════════════════════════════════ -->
 <div id="first-run-setup" style="
-  position:fixed; inset:0; background:#0d0d0d; z-index:10000;
-  display:none; align-items:center; justify-content:center; padding:20px;
+  position:fixed; inset:0; background:#0a0a0a; z-index:10000;
+  display:none; align-items:center; justify-content:center; padding:16px;
+  overflow-y:auto;
 ">
   <div style="
-    width:100%; max-width:360px; background:#161616; border:1px solid #333;
-    border-radius:22px; padding:30px 24px; text-align:center;
-    box-shadow:0 20px 60px rgba(0,0,0,.5);
+    width:100%; max-width:400px; margin:auto;
+    font-family:'Outfit',sans-serif;
   ">
-    <div style="font-size:2.6rem;margin-bottom:8px;">🏪</div>
-    <div style="font-size:1.35rem;font-weight:800;color:#f5c542;margin-bottom:4px;">Bienveni nan ClairMarché POS</div>
-    <div style="font-size:.8rem;color:#777;margin-bottom:24px;">Konfigire boutik ou a anvan w kòmanse.</div>
 
-    <div style="text-align:left;margin-bottom:14px;">
-      <label style="font-size:.75rem;color:#aaa;font-weight:600;display:block;margin-bottom:6px;">Nom Boutik la</label>
-      <input id="setup-shop-name" type="text" placeholder="Ex: Boutik Rapo" maxlength="40" style="
-        width:100%;background:#222;border:1px solid #333;border-radius:10px;
-        padding:12px 14px;color:#fff;font-family:'Outfit',sans-serif;font-size:.95rem;outline:none;
-        box-sizing:border-box;
-      ">
+    <!-- Progress bar -->
+    <div style="display:flex;gap:6px;margin-bottom:24px;">
+      <div id="onb-step-bar-1" style="flex:1;height:4px;border-radius:4px;background:#f5c542;transition:all .3s;"></div>
+      <div id="onb-step-bar-2" style="flex:1;height:4px;border-radius:4px;background:#333;transition:all .3s;"></div>
     </div>
 
-    <div style="text-align:left;margin-bottom:14px;">
-      <label style="font-size:.75rem;color:#aaa;font-weight:600;display:block;margin-bottom:6px;">Kreye PIN Admin (min. 4 chif)</label>
-      <input id="setup-pin" type="password" inputmode="numeric" placeholder="••••" maxlength="6" style="
-        width:100%;background:#222;border:1px solid #333;border-radius:10px;
-        padding:12px 14px;color:#f5c542;font-family:'Space Mono',monospace;font-size:1.3rem;
-        text-align:center;letter-spacing:6px;outline:none;box-sizing:border-box;
-      ">
+    <!-- ─── STEP 1: Shop Info ─────────────────────────────────────────────── -->
+    <div id="onb-step-1">
+      <div style="text-align:center;margin-bottom:24px;">
+        <div style="font-size:3rem;margin-bottom:8px;">🏪</div>
+        <div style="font-size:1.4rem;font-weight:800;color:#f5c542;margin-bottom:4px;">Enstale ClairMarché POS</div>
+        <div style="font-size:.82rem;color:#666;">Etap 1 / 2 — Enfòmasyon Boutik</div>
+      </div>
+
+      <!-- Shop name -->
+      <div style="margin-bottom:14px;">
+        <label style="font-size:.73rem;color:#aaa;font-weight:700;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">
+          Non Boutik <span style="color:#ff3d57;">*</span>
+        </label>
+        <input id="onb-shop-name" type="text" placeholder="Ex: Boutik Manman Marie" maxlength="50" autocomplete="off" style="
+          width:100%;background:#181818;border:1.5px solid #2e2e2e;border-radius:12px;
+          padding:13px 16px;color:#fff;font-family:'Outfit',sans-serif;font-size:.95rem;
+          outline:none;box-sizing:border-box;transition:border-color .2s;
+        " onfocus="this.style.borderColor='#f5c542'" onblur="this.style.borderColor='#2e2e2e'">
+      </div>
+
+      <!-- Owner name -->
+      <div style="margin-bottom:14px;">
+        <label style="font-size:.73rem;color:#aaa;font-weight:700;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">
+          Non Pwopriyetè <span style="color:#ff3d57;">*</span>
+        </label>
+        <input id="onb-owner-name" type="text" placeholder="Ex: Marie Jean-Baptiste" maxlength="50" autocomplete="off" style="
+          width:100%;background:#181818;border:1.5px solid #2e2e2e;border-radius:12px;
+          padding:13px 16px;color:#fff;font-family:'Outfit',sans-serif;font-size:.95rem;
+          outline:none;box-sizing:border-box;transition:border-color .2s;
+        " onfocus="this.style.borderColor='#f5c542'" onblur="this.style.borderColor='#2e2e2e'">
+      </div>
+
+      <!-- Phone -->
+      <div style="margin-bottom:14px;">
+        <label style="font-size:.73rem;color:#aaa;font-weight:700;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">
+          Telefòn / WhatsApp <span style="color:#ff3d57;">*</span>
+        </label>
+        <input id="onb-phone" type="tel" placeholder="+509 XXXX-XXXX" maxlength="20" autocomplete="off" style="
+          width:100%;background:#181818;border:1.5px solid #2e2e2e;border-radius:12px;
+          padding:13px 16px;color:#fff;font-family:'Outfit',sans-serif;font-size:.95rem;
+          outline:none;box-sizing:border-box;transition:border-color .2s;
+        " onfocus="this.style.borderColor='#f5c542'" onblur="this.style.borderColor='#2e2e2e'">
+      </div>
+
+      <!-- Business type -->
+      <div style="margin-bottom:22px;">
+        <label style="font-size:.73rem;color:#aaa;font-weight:700;display:block;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;">
+          Tip Biznis <span style="color:#ff3d57;">*</span>
+        </label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;" id="onb-biz-grid">
+          <button type="button" class="onb-biz-btn" data-val="Boutique" onclick="selectBizType(this)" style="
+            padding:10px 8px;border-radius:10px;border:1.5px solid #2e2e2e;
+            background:#181818;color:#ccc;font-family:'Outfit',sans-serif;
+            font-size:.82rem;font-weight:600;cursor:pointer;transition:all .2s;text-align:center;
+          ">🛍️ Boutique</button>
+          <button type="button" class="onb-biz-btn" data-val="Matériaux" onclick="selectBizType(this)" style="
+            padding:10px 8px;border-radius:10px;border:1.5px solid #2e2e2e;
+            background:#181818;color:#ccc;font-family:'Outfit',sans-serif;
+            font-size:.82rem;font-weight:600;cursor:pointer;transition:all .2s;text-align:center;
+          ">🏗️ Matériaux</button>
+          <button type="button" class="onb-biz-btn" data-val="Mini-market" onclick="selectBizType(this)" style="
+            padding:10px 8px;border-radius:10px;border:1.5px solid #2e2e2e;
+            background:#181818;color:#ccc;font-family:'Outfit',sans-serif;
+            font-size:.82rem;font-weight:600;cursor:pointer;transition:all .2s;text-align:center;
+          ">🧺 Mini-market</button>
+          <button type="button" class="onb-biz-btn" data-val="Pharmacie" onclick="selectBizType(this)" style="
+            padding:10px 8px;border-radius:10px;border:1.5px solid #2e2e2e;
+            background:#181818;color:#ccc;font-family:'Outfit',sans-serif;
+            font-size:.82rem;font-weight:600;cursor:pointer;transition:all .2s;text-align:center;
+          ">💊 Pharmacie</button>
+          <button type="button" class="onb-biz-btn" data-val="Librairie" onclick="selectBizType(this)" style="
+            padding:10px 8px;border-radius:10px;border:1.5px solid #2e2e2e;
+            background:#181818;color:#ccc;font-family:'Outfit',sans-serif;
+            font-size:.82rem;font-weight:600;cursor:pointer;transition:all .2s;text-align:center;
+          ">📚 Librairie</button>
+          <button type="button" class="onb-biz-btn" data-val="Autre" onclick="selectBizType(this)" style="
+            padding:10px 8px;border-radius:10px;border:1.5px solid #2e2e2e;
+            background:#181818;color:#ccc;font-family:'Outfit',sans-serif;
+            font-size:.82rem;font-weight:600;cursor:pointer;transition:all .2s;text-align:center;
+          ">🏢 Autre</button>
+        </div>
+      </div>
+
+      <div id="onb-error-1" style="display:none;color:#ff3d57;font-size:.82rem;font-weight:700;margin-bottom:12px;padding:10px 14px;background:rgba(255,61,87,.08);border-radius:8px;border-left:3px solid #ff3d57;"></div>
+
+      <button onclick="onbGoStep2()" style="
+        width:100%;padding:15px;border:none;border-radius:12px;
+        background:linear-gradient(135deg,#f5c542,#e6a800);color:#000;
+        font-family:'Outfit',sans-serif;font-size:1rem;font-weight:800;
+        cursor:pointer;transition:all .2s;letter-spacing:.3px;
+      " onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 20px rgba(245,197,66,.35)'"
+         onmouseout="this.style.transform='';this.style.boxShadow=''">
+        Kontinye →
+      </button>
     </div>
 
-    <div style="text-align:left;margin-bottom:20px;">
-      <label style="font-size:.75rem;color:#aaa;font-weight:600;display:block;margin-bottom:6px;">Konfime PIN Admin</label>
-      <input id="setup-pin-confirm" type="password" inputmode="numeric" placeholder="••••" maxlength="6" style="
-        width:100%;background:#222;border:1px solid #333;border-radius:10px;
-        padding:12px 14px;color:#f5c542;font-family:'Space Mono',monospace;font-size:1.3rem;
-        text-align:center;letter-spacing:6px;outline:none;box-sizing:border-box;
-      " onkeydown="if(event.key==='Enter') completeFirstRunSetup()">
+    <!-- ─── STEP 2: PIN Setup ─────────────────────────────────────────────── -->
+    <div id="onb-step-2" style="display:none;">
+      <div style="text-align:center;margin-bottom:24px;">
+        <div style="font-size:3rem;margin-bottom:8px;">🔐</div>
+        <div style="font-size:1.4rem;font-weight:800;color:#f5c542;margin-bottom:4px;">Sekirite Admin</div>
+        <div style="font-size:.82rem;color:#666;">Etap 2 / 2 — Kreye PIN pou pwoteje app la</div>
+      </div>
+
+      <!-- Admin PIN -->
+      <div style="margin-bottom:16px;">
+        <label style="font-size:.73rem;color:#aaa;font-weight:700;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">
+          PIN Admin <span style="color:#ff3d57;">*</span>
+        </label>
+        <div style="position:relative;">
+          <input id="onb-pin" type="password" inputmode="numeric" placeholder="••••••" maxlength="6" style="
+            width:100%;background:#181818;border:1.5px solid #2e2e2e;border-radius:12px;
+            padding:14px 48px 14px 16px;color:#f5c542;font-family:'Space Mono',monospace;
+            font-size:1.5rem;text-align:center;letter-spacing:8px;outline:none;
+            box-sizing:border-box;transition:border-color .2s;
+          " onfocus="this.style.borderColor='#f5c542'" onblur="this.style.borderColor='#2e2e2e'">
+          <button onclick="toggleOnbPinVisibility('onb-pin','onb-pin-eye')" type="button" id="onb-pin-eye" style="
+            position:absolute;right:14px;top:50%;transform:translateY(-50%);
+            background:none;border:none;color:#555;font-size:1rem;cursor:pointer;padding:4px;
+          ">👁️</button>
+        </div>
+        <div style="font-size:.72rem;color:#555;margin-top:6px;">Minimum 4 chif nimerik sèlman.</div>
+      </div>
+
+      <!-- Confirm PIN -->
+      <div style="margin-bottom:22px;">
+        <label style="font-size:.73rem;color:#aaa;font-weight:700;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">
+          Konfime PIN Admin <span style="color:#ff3d57;">*</span>
+        </label>
+        <div style="position:relative;">
+          <input id="onb-pin-confirm" type="password" inputmode="numeric" placeholder="••••••" maxlength="6" style="
+            width:100%;background:#181818;border:1.5px solid #2e2e2e;border-radius:12px;
+            padding:14px 48px 14px 16px;color:#f5c542;font-family:'Space Mono',monospace;
+            font-size:1.5rem;text-align:center;letter-spacing:8px;outline:none;
+            box-sizing:border-box;transition:border-color .2s;
+          " onfocus="this.style.borderColor='#f5c542'" onblur="this.style.borderColor='#2e2e2e'"
+            onkeydown="if(event.key==='Enter') completeFirstRunSetup()">
+          <button onclick="toggleOnbPinVisibility('onb-pin-confirm','onb-pin-confirm-eye')" type="button" id="onb-pin-confirm-eye" style="
+            position:absolute;right:14px;top:50%;transform:translateY(-50%);
+            background:none;border:none;color:#555;font-size:1rem;cursor:pointer;padding:4px;
+          ">👁️</button>
+        </div>
+      </div>
+
+      <!-- PIN strength indicator -->
+      <div id="onb-pin-strength" style="display:none;margin-bottom:14px;">
+        <div style="height:3px;border-radius:3px;background:#2e2e2e;overflow:hidden;">
+          <div id="onb-pin-strength-bar" style="height:100%;width:0%;background:#ff3d57;transition:all .3s;border-radius:3px;"></div>
+        </div>
+        <div id="onb-pin-strength-label" style="font-size:.7rem;color:#555;margin-top:4px;"></div>
+      </div>
+
+      <div id="onb-error-2" style="display:none;color:#ff3d57;font-size:.82rem;font-weight:700;margin-bottom:12px;padding:10px 14px;background:rgba(255,61,87,.08);border-radius:8px;border-left:3px solid #ff3d57;"></div>
+
+      <button onclick="completeFirstRunSetup()" style="
+        width:100%;padding:15px;border:none;border-radius:12px;
+        background:linear-gradient(135deg,#f5c542,#e6a800);color:#000;
+        font-family:'Outfit',sans-serif;font-size:1rem;font-weight:800;
+        cursor:pointer;transition:all .2s;letter-spacing:.3px;margin-bottom:12px;
+      " onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 20px rgba(245,197,66,.35)'"
+         onmouseout="this.style.transform='';this.style.boxShadow=''">
+        ✅ Kòmanse Itilize App la
+      </button>
+
+      <button onclick="onbGoStep1()" style="
+        width:100%;padding:11px;border:1px solid #2e2e2e;border-radius:12px;
+        background:transparent;color:#666;font-family:'Outfit',sans-serif;
+        font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s;
+      " onmouseover="this.style.borderColor='#555';this.style.color='#aaa'"
+         onmouseout="this.style.borderColor='#2e2e2e';this.style.color='#666'">
+        ← Retounen
+      </button>
     </div>
 
-    <div id="setup-error" style="display:none;color:#ff3d57;font-size:.82rem;font-weight:700;margin-bottom:14px;"></div>
-
-    <button onclick="completeFirstRunSetup()" style="
-      width:100%;padding:14px;border:none;border-radius:12px;
-      background:#f5c542;color:#000;font-family:'Outfit',sans-serif;
-      font-size:1rem;font-weight:700;cursor:pointer;transition:all 0.2s;
-    " onmouseover="this.style.background='#e6a800'" onmouseout="this.style.background='#f5c542'">
-      ✅ Kòmanse Itilize App la
-    </button>
   </div>
 </div>
+
 
 <!-- ══ PIN LOCK SCREEN ════════════════════════════════════════════════════ -->
 <div id="pin-lock" style="
@@ -2775,13 +2917,20 @@ body {
       <div class="param-row-sub">PIN lan pwoteje done boutique la</div>
     </div>
     <button class="param-btn gold" onclick="changePin()">🔐 Chanje</button>
-    <div class="param-row">
-      <div class="param-row-info">
-        <div class="param-row-label">Fèmen App la</div>
-        <div class="param-row-sub">Mande PIN ankò sou menm aparèy la</div>
-      </div>
-      <button class="param-btn red" onclick="lockApp()">🔒 Lock</button>
+  <div class="param-row">
+    <div class="param-row-info">
+      <div class="param-row-label">Fèmen App la</div>
+      <div class="param-row-sub">Mande PIN ankò sou menm aparèy la</div>
     </div>
+    <button class="param-btn red" onclick="lockApp()">🔒 Lock</button>
+  </div>
+
+  <div class="param-row" style="margin-top:4px;border-top:1px solid rgba(255,61,87,.15);padding-top:4px;">
+    <div class="param-row-info">
+      <div class="param-row-label" style="color:#ff3d57;">Reyinisyalize Konfigirasyon</div>
+      <div class="param-row-sub">Efase PIN ak done boutik la, rekòmanse setup.</div>
+    </div>
+    <button class="param-btn red" onclick="resetAppSetup()" style="opacity:.8;">🔄 Reset</button>
   </div>
 </div>
 
@@ -3120,62 +3269,229 @@ let isUnlocked = sessionStorage.getItem('br_unlocked') === 'yes';
 
 let selectedLoginRole = 'admin';
 
-// ── FIRST-RUN SETUP ────────────────────────────────────────────────────────
+// ── ONBOARDING — Multi-step first-run flow ──────────────────────────────────
+let _onbSelectedBizType = '';
+
+function selectBizType(btn) {
+  // Deselect all
+  document.querySelectorAll('.onb-biz-btn').forEach(b => {
+    b.style.background = '#181818';
+    b.style.borderColor = '#2e2e2e';
+    b.style.color = '#ccc';
+  });
+  // Select clicked
+  btn.style.background = 'rgba(245,197,66,0.12)';
+  btn.style.borderColor = '#f5c542';
+  btn.style.color = '#f5c542';
+  _onbSelectedBizType = btn.getAttribute('data-val');
+}
+
+function toggleOnbPinVisibility(inputId, btnId) {
+  const inp = document.getElementById(inputId);
+  const btn = document.getElementById(btnId);
+  if (!inp) return;
+  if (inp.type === 'password') {
+    inp.type = 'text';
+    if (btn) btn.textContent = '🙈';
+  } else {
+    inp.type = 'password';
+    if (btn) btn.textContent = '👁️';
+  }
+}
+
+function _onbShowError(stepNum, msg) {
+  const el = document.getElementById('onb-error-' + stepNum);
+  if (el) { el.textContent = msg; el.style.display = 'block'; }
+}
+function _onbHideError(stepNum) {
+  const el = document.getElementById('onb-error-' + stepNum);
+  if (el) el.style.display = 'none';
+}
+
+function onbGoStep2() {
+  _onbHideError(1);
+  const shopName = (document.getElementById('onb-shop-name')?.value || '').trim();
+  const ownerName = (document.getElementById('onb-owner-name')?.value || '').trim();
+  const phone = (document.getElementById('onb-phone')?.value || '').trim();
+
+  if (!shopName)    { _onbShowError(1, 'Tanpri antre non boutik la.'); return; }
+  if (!ownerName)   { _onbShowError(1, 'Tanpri antre non pwopriyetè a.'); return; }
+  if (!phone)       { _onbShowError(1, 'Tanpri antre nimewo telefòn nan.'); return; }
+  if (!_onbSelectedBizType) { _onbShowError(1, 'Chwazi tip biznis ou a tanpri.'); return; }
+
+  // Move to step 2
+  document.getElementById('onb-step-1').style.display = 'none';
+  document.getElementById('onb-step-2').style.display = 'block';
+  document.getElementById('onb-step-bar-2').style.background = '#f5c542';
+  document.getElementById('onb-pin')?.focus();
+
+  // Wire PIN strength meter
+  const pinEl = document.getElementById('onb-pin');
+  if (pinEl) {
+    pinEl.addEventListener('input', _onbUpdatePinStrength);
+  }
+}
+
+function onbGoStep1() {
+  document.getElementById('onb-step-2').style.display = 'none';
+  document.getElementById('onb-step-1').style.display = 'block';
+  document.getElementById('onb-step-bar-2').style.background = '#333';
+  _onbHideError(2);
+}
+
+function _onbUpdatePinStrength() {
+  const pin = document.getElementById('onb-pin')?.value || '';
+  const strengthDiv = document.getElementById('onb-pin-strength');
+  const bar = document.getElementById('onb-pin-strength-bar');
+  const label = document.getElementById('onb-pin-strength-label');
+  if (!strengthDiv || !bar || !label) return;
+
+  if (pin.length === 0) { strengthDiv.style.display = 'none'; return; }
+  strengthDiv.style.display = 'block';
+
+  let pct = 0, color = '#ff3d57', txt = '';
+  if (pin.length < 4)      { pct = 20; color = '#ff3d57'; txt = 'Twò kout'; }
+  else if (pin.length === 4) { pct = 50; color = '#f5c542'; txt = 'Akseptab'; }
+  else if (pin.length === 5) { pct = 75; color = '#40c4ff'; txt = 'Bon'; }
+  else if (pin.length === 6) { pct = 100; color = '#4caf50'; txt = 'Solid ✓'; }
+  bar.style.width = pct + '%';
+  bar.style.background = color;
+  label.textContent = txt;
+  label.style.color = color;
+}
+
 function checkFirstRun() {
-  const setupDone = localStorage.getItem('br_setup_done');
+  const settings = localStorage.getItem('clairmarche_settings');
+  const legacyDone = localStorage.getItem('br_setup_done');
   const pinLock = document.getElementById('pin-lock');
   const setupScreen = document.getElementById('first-run-setup');
 
-  if (!setupDone || !appPin) {
-    // Show first-run setup, hide PIN lock
+  const isConfigured = (settings || legacyDone) && appPin;
+
+  if (!isConfigured) {
     if (setupScreen) setupScreen.style.display = 'flex';
     if (pinLock) pinLock.style.display = 'none';
   } else {
-    // Already configured — show PIN lock as normal
     if (setupScreen) setupScreen.style.display = 'none';
     if (pinLock) pinLock.style.display = 'flex';
   }
 }
 
 function completeFirstRunSetup() {
-  const shopNameEl = document.getElementById('setup-shop-name');
-  const pinEl = document.getElementById('setup-pin');
-  const pinConfirmEl = document.getElementById('setup-pin-confirm');
-  const errorEl = document.getElementById('setup-error');
+  _onbHideError(2);
+  const pin        = (document.getElementById('onb-pin')?.value || '').trim();
+  const pinConfirm = (document.getElementById('onb-pin-confirm')?.value || '').trim();
+  const shopName   = (document.getElementById('onb-shop-name')?.value || '').trim();
+  const ownerName  = (document.getElementById('onb-owner-name')?.value || '').trim();
+  const phone      = (document.getElementById('onb-phone')?.value || '').trim();
 
-  const shopName = shopNameEl ? shopNameEl.value.trim() : '';
-  const pin = pinEl ? pinEl.value.trim() : '';
-  const pinConfirm = pinConfirmEl ? pinConfirmEl.value.trim() : '';
+  if (!pin || pin.length < 4)        { _onbShowError(2, 'PIN dwe gen omwen 4 chif.'); return; }
+  if (!/^\d+$/.test(pin))            { _onbShowError(2, 'PIN dwe sèlman gen chif nimerik.'); return; }
+  if (pin !== pinConfirm)            { _onbShowError(2, '❌ PIN konfirmasyon an pa menm ak PIN ou antre a.'); return; }
 
-  const showSetupError = (msg) => {
-    if (errorEl) { errorEl.textContent = msg; errorEl.style.display = 'block'; }
+  // ── Save to canonical clairmarche_settings key ──
+  const settings = {
+    shopName,
+    ownerName,
+    phone,
+    bizType: _onbSelectedBizType,
+    adminPin: pin,
+    setupAt: new Date().toISOString(),
+    version: '2.0'
   };
+  localStorage.setItem('clairmarche_settings', JSON.stringify(settings));
 
-  if (!shopName) { showSetupError('Tanpri antre non boutik la.'); return; }
-  if (!pin || pin.length < 4) { showSetupError('PIN dwe gen omwen 4 chif.'); return; }
-  if (!/^\d+$/.test(pin)) { showSetupError('PIN dwe sèlman gen chif.'); return; }
-  if (pin !== pinConfirm) { showSetupError('PIN konfirmasyon an pa menm ak PIN ou te antre a.'); return; }
-
-  // Save setup
+  // ── Populate legacy br_ keys for app compatibility ──
   localStorage.setItem('br_shop_name', shopName);
   localStorage.setItem('br_pin', pin);
   localStorage.setItem('br_admin_pin', pin);
   localStorage.setItem('br_setup_done', 'yes');
 
-  // Update runtime state
-  appPin = pin;
+  // Also populate shopInfo so receipts/reports have data immediately
+  const currentShop = JSON.parse(localStorage.getItem('br_shop') || '{}');
+  currentShop.name = shopName;
+  currentShop.tel  = phone;
+  if (!currentShop.msg) currentShop.msg = 'Mèsi pou konfyans ou!';
+  localStorage.setItem('br_shop', JSON.stringify(currentShop));
+
+  // ── Update runtime state ──
+  appPin   = pin;
   adminPin = pin;
+  shopInfo = currentShop;
 
-  // Apply shop name if branding exists
-  const brandEl = document.getElementById('shop-name-display');
-  if (brandEl) brandEl.textContent = shopName;
-
-  // Hide setup, show login
+  // ── Transition to login ──
   const setupScreen = document.getElementById('first-run-setup');
-  const pinLock = document.getElementById('pin-lock');
+  const pinLock     = document.getElementById('pin-lock');
   if (setupScreen) setupScreen.style.display = 'none';
   if (pinLock) { pinLock.style.display = 'flex'; showRoleSelect(); }
+
+  applyBranding();
 }
+
+// ── Reset setup — admin settings only ────────────────────────────────────────
+function resetAppSetup() {
+  const confirmed = confirm(
+    '⚠️ Reyinisyalize konfigirasyon?\n\n' +
+    'Sa pral efase:\n' +
+    '- Non boutik ak pwopriyetè\n' +
+    '- Telefòn ak tip biznis\n' +
+    '- PIN Admin\n\n' +
+    'Done vant, pwodwi ak kliyan yo PA pral efase.\n\n' +
+    'Kontinye?'
+  );
+  if (!confirmed) return;
+
+  localStorage.removeItem('clairmarche_settings');
+  localStorage.removeItem('br_setup_done');
+  localStorage.removeItem('br_pin');
+  localStorage.removeItem('br_admin_pin');
+  localStorage.removeItem('br_shop_name');
+
+  // Reset runtime
+  appPin   = null;
+  adminPin = null;
+  _onbSelectedBizType = '';
+
+  // Reset onboarding form
+  ['onb-shop-name','onb-owner-name','onb-phone','onb-pin','onb-pin-confirm'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.querySelectorAll('.onb-biz-btn').forEach(b => {
+    b.style.background = '#181818';
+    b.style.borderColor = '#2e2e2e';
+    b.style.color = '#ccc';
+  });
+  const bar1 = document.getElementById('onb-step-bar-1');
+  const bar2 = document.getElementById('onb-step-bar-2');
+  if (bar1) bar1.style.background = '#f5c542';
+  if (bar2) bar2.style.background = '#333';
+
+  // Show onboarding, lock app
+  sessionStorage.removeItem('br_unlocked');
+  sessionStorage.removeItem('br_admin_unlocked');
+  isUnlocked = false;
+
+  const header  = document.getElementById('app-header');
+  const sidebar = document.getElementById('sidebar');
+  if (header)  header.style.display  = 'none';
+  if (sidebar) sidebar.style.display = 'none';
+
+  const pinLock     = document.getElementById('pin-lock');
+  const setupScreen = document.getElementById('first-run-setup');
+  if (pinLock) pinLock.style.display = 'none';
+
+  // Reset to step 1
+  const step1 = document.getElementById('onb-step-1');
+  const step2 = document.getElementById('onb-step-2');
+  if (step1) step1.style.display = 'block';
+  if (step2) step2.style.display = 'none';
+
+  if (setupScreen) setupScreen.style.display = 'flex';
+
+  showToast('🔄 Konfigirasyon reyinisyalize. Rekonfigire app la.');
+}
+
 
 function showLoginScreen(role) {
   selectedLoginRole = role;
