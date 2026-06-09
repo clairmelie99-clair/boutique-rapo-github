@@ -1426,15 +1426,18 @@ body {
 /* Toast */
 .toast {
   position: fixed; top: calc(72px + env(safe-area-inset-top, 0px)); left: 50%;
-  transform: translateX(-50%) translateY(-200px);
+  transform: translateX(-50%) translateY(-20px);
+  opacity: 0;
   background: var(--green); color: #000;
   padding: 12px 20px; border-radius: 30px;
   font-weight: 700; font-size: 0.85rem;
-  z-index: 99999; transition: transform 0.4s cubic-bezier(.34,1.56,.64,1);
+  z-index: 99999; transition: transform 0.3s cubic-bezier(.34,1.56,.64,1), opacity 0.3s ease;
   white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.35);
 }
 
-.toast.show { transform: translateX(-50%) translateY(0); }
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; pointer-events: auto; }
 
 /* Scroll snap for smoothness */
 ::-webkit-scrollbar { display: none; }
@@ -4050,8 +4053,8 @@ function _qToast(msg) {
   if (!t) { console.warn('Toast:', msg); return; }
   t.textContent = msg;
   t.classList.add('show');
-  clearTimeout(window._qToastTimer);
-  window._qToastTimer = setTimeout(function(){ t.classList.remove('show'); }, 3500);
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 3500);
 }
 
 
@@ -7369,9 +7372,11 @@ function showAboutApp() {
 // ── TOAST ──────────────────────────────────────────────────────────────────
 function showToast(msg) {
   const t = document.getElementById('toast');
+  if (!t) { console.warn('Toast:', msg); return; }
   t.textContent = msg;
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
 }
 
 // ── SERVICE WORKER REGISTRATION ─────────────────────────────────────────────
