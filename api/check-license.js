@@ -49,7 +49,7 @@ export default async function handler(req, res) {
         },
         body: JSON.stringify({
           device_id: deviceId,
-          shop_name: 'Boutique ClairMarché',
+          shop_name: 'ClairMarché POS',
           status: 'trial',
           plan: 'solo',
           notes: 'Enskri otomatikman nan premye ouvèti'

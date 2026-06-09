@@ -31,7 +31,7 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         device_id: deviceId,
-        shop_name: shopName || 'Boutique ClairMarché',
+        shop_name: shopName || 'ClairMarché POS',
         status: 'active', plan,
         activated_at: activatedAt,
         expires_at: expiresAt,

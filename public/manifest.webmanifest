@@ -1,6 +1,6 @@
 {
   "name": "ClairMarché POS",
-  "short_name": "ClairMarché",
+  "short_name": "ClairMarché POS",
   "description": "Sistèm POS pwofesyonèl pou ti biznis. Jere stock, lavant, dèt ak rapò pou tout kalite biznis.",
   "start_url": "./index.html",
   "display": "standalone",

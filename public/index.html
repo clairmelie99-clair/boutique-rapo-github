@@ -3,20 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>ClairMarché — Edition Client</title>
-<meta name="description" content="ClairMarché — Sistèm POS pwofesyonèl pou ti biznis. Jere stock, lavant, dèt ak rapò pou tout kalite biznis.">
+<title>ClairMarché POS — Sistèm Biznis</title>
+<meta name="description" content="ClairMarché POS — Sistèm POS pwofesyonèl pou ti biznis. Jere stock, lavant, dèt ak rapò pou tout kalite biznis.">
 <meta name="theme-color" content="#0d0d0d">
 <meta name="background-color" content="#0d0d0d">
 
 <!-- PWA / App Install -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="ClairMarché">
+<meta name="apple-mobile-web-app-title" content="ClairMarché POS">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="application-name" content="ClairMarché">
+<meta name="application-name" content="ClairMarché POS">
 
 <!-- Open Graph -->
-<meta property="og:title" content="ClairMarché — Edition Client">
+<meta property="og:title" content="ClairMarché POS — Sistèm Biznis">
 <meta property="og:description" content="Jere stock, lavant, dèt ak rapò pou tout kalite biznis">
 <meta property="og:type" content="app">
 
@@ -1800,7 +1800,7 @@ body {
 <!-- ══ SPLASH SCREEN ══════════════════════════════════════════════════════ -->
 <div class="app-splash" id="app-splash">
   <img src="./icon.png" style="width:80px;height:80px;border-radius:20px;margin-bottom:16px;object-fit:cover;border:1px solid #333;box-shadow:0 10px 30px rgba(0,0,0,0.5);">
-  <div class="splash-name">Clair<span>Marché</span></div>
+  <div class="splash-name">ClairMarché<span> POS</span></div>
   <div class="splash-bar"><div class="splash-progress"></div></div>
   <div class="splash-sub" id="splash-version">v2.0 · Chajman...</div>
 </div>
@@ -1860,7 +1860,7 @@ body {
     box-shadow:0 20px 60px rgba(0,0,0,.5);
   ">
     <div style="font-size:2.6rem;margin-bottom:8px;">🏪</div>
-    <div style="font-size:1.35rem;font-weight:800;color:#f5c542;margin-bottom:4px;">Bienveni nan ClairMarché</div>
+    <div style="font-size:1.35rem;font-weight:800;color:#f5c542;margin-bottom:4px;">Bienveni nan ClairMarché POS</div>
     <div style="font-size:.8rem;color:#777;margin-bottom:24px;">Konfigire boutik ou a anvan w kòmanse.</div>
 
     <div style="text-align:left;margin-bottom:14px;">
@@ -1916,7 +1916,7 @@ body {
     <div id="pin-role-select">
       <img src="./icon.png" style="width:72px;height:72px;border-radius:18px;margin-bottom:12px;object-fit:cover;border:1px solid #333;box-shadow:0 8px 24px rgba(0,0,0,0.4);">
       <div style="font-size:1.4rem;font-weight:800;margin-bottom:6px;color:#f5c542;">
-        Clair<span>Marché</span>
+        ClairMarché<span> POS</span>
       </div>
       <div style="font-size:.8rem;color:#777;margin-bottom:24px;">
         Chwazi sesyon ou vle ouvri a:
@@ -2009,7 +2009,7 @@ body {
 <!-- ══ PAGE: AKÈY ══════════════════════════════════════════════════════════ -->
 <div class="page active" id="page-home">
   <div class="home-hero">
-    <div class="home-title">Clair<span>Marché</span></div>
+    <div class="home-title">ClairMarché<span> POS</span></div>
     <div class="home-sub">Jere stock, lavant, dèt ak rapò pou tout kalite biznis</div>
   </div>
 
@@ -2048,7 +2048,7 @@ body {
 <!-- ══ PAGE: VANN ══════════════════════════════════════════════════════════ -->
 <div class="page" id="page-vann">
   <div class="topbar">
-    <div class="topbar-title">Clair<span>Rapò</span></div>
+    <div class="topbar-title">ClairMarché<span> POS</span></div>
     <div class="topbar-date" id="top-date"></div>
   </div>
 
@@ -2857,7 +2857,7 @@ body {
 
     <div class="trial-header">
       <div class="trial-icon">🔓</div>
-      <div class="trial-title" id="paywall-title">Kontinye ClairMarché</div>
+      <div class="trial-title" id="paywall-title">Kontinye ClairMarché POS</div>
       <div class="trial-sub" id="paywall-sub">Chwazi yon plan pou kontinye itilize app la san entèripsyon</div>
     </div>
 
@@ -3354,7 +3354,7 @@ function lockApp() {
 }
 
 function applyBranding() {
-  const appName = appBrand.appName || 'ClairMarché';
+  const appName = appBrand.appName || 'ClairMarché POS';
   const devName = appBrand.developer || 'Klè Tech';
   
   let styledHTML = appName;
@@ -3366,8 +3366,8 @@ function applyBranding() {
     const idx = nameLower.indexOf('boutique') + 'boutique'.length;
     styledHTML = appName.substring(0, idx) + '<span>' + appName.substring(idx) + '</span>';
   } else if (nameLower.includes('clairmarché') || nameLower.includes('clairmarche')) {
-    // Exact match styling for ClairMarché
-    styledHTML = 'Clair<span>Marché</span>';
+    // Exact match styling for ClairMarché POS
+    styledHTML = 'ClairMarché<span> POS</span>';
   } else {
     const mid = Math.floor(appName.length / 2);
     styledHTML = appName.substring(0, mid) + '<span>' + appName.substring(mid) + '</span>';
@@ -3397,7 +3397,7 @@ function loadBrandingForm() {
   const devNameInput = document.getElementById('brand-dev-name');
   const versionLabel = document.getElementById('app-version-label');
 
-  if (appNameInput) appNameInput.value = appBrand.appName || 'ClairMarché';
+  if (appNameInput) appNameInput.value = appBrand.appName || 'ClairMarché POS';
   if (devNameInput) devNameInput.value = appBrand.developer || 'Klè Tech';
   if (versionLabel) versionLabel.textContent = 'v' + appVersion + ' (PWA + IA)';
 
@@ -3405,7 +3405,7 @@ function loadBrandingForm() {
 }
 
 function saveBranding() {
-  const appName = document.getElementById('brand-app-name').value.trim() || 'ClairMarché';
+  const appName = document.getElementById('brand-app-name').value.trim() || 'ClairMarché POS';
   const developer = document.getElementById('brand-dev-name').value.trim() || 'Klè Tech';
 
   appBrand = { appName, developer };
@@ -5380,7 +5380,7 @@ const ONLINE_SHOPS_API = API_BASE_URL + '/api/shops';
 let localTestMode = localStorage.getItem('br_local_test_mode') === 'yes';
 let localTestShopId = localStorage.getItem('br_local_test_shop_id') || '';
 let appVersion = localStorage.getItem('br_version') || '2.0.0';
-let appBrand = JSON.parse(localStorage.getItem('br_brand') || '{"appName":"ClairMarché","developer":"Klè Tech"}');
+let appBrand = JSON.parse(localStorage.getItem('br_brand') || '{"appName":"ClairMarché POS","developer":"Klè Tech"}');
 
 function isLocalTestMode() {
   return localTestMode;
@@ -6400,7 +6400,7 @@ function switchPage(id, btn) {
         'param': '⚙️ Paramèt App',
         'library': '🎓 Libreri Kliyan & Kou'
       };
-      headerTitle.textContent = pageTitles[id] || 'ClairMarché';
+      headerTitle.textContent = pageTitles[id] || 'ClairMarché POS';
     }
   }
   
@@ -7243,7 +7243,7 @@ function activateLicense(plan, billing, code) {
   saveLicense();
 
   // ── Anrejistre aktivasyon sa a nan Supabase (an silans) ──
-  const shopNameVal = localStorage.getItem('br_shop_name') || 'Boutique ClairMarché';
+  const shopNameVal = localStorage.getItem('br_shop_name') || 'ClairMarché POS';
   fetch(API_BASE_URL + '/api/activate-license', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
