@@ -2206,45 +2206,92 @@ body {
 <!-- ══ PAGE: RAPÒ ══════════════════════════════════════════════════════════ -->
 <div class="page" id="page-rapò">
   <div class="topbar">
-    <div class="topbar-title">Rapò <span>Jounen</span></div>
+    <div class="topbar-title">📊 <span>Rapò Biznis</span></div>
   </div>
 
-  <div class="rapò-date-nav">
-    <button class="date-nav-btn" onclick="navDate(-1)">‹</button>
-    <div class="date-nav-label" id="rapò-date-label"></div>
-    <button class="date-nav-btn" onclick="navDate(1)">›</button>
+  <!-- Period filter tabs -->
+  <div id="rapò-period-tabs" style="
+    display:flex; gap:6px; padding:12px 14px 0;
+    overflow-x:auto; -webkit-overflow-scrolling:touch;
+  ">
+    <button id="period-btn-today" onclick="setRapòPeriod('today')" style="
+      flex-shrink:0; padding:7px 16px; border-radius:20px; border:1.5px solid #f5c542;
+      background:#f5c542; color:#000; font-family:'Outfit',sans-serif;
+      font-size:.78rem; font-weight:800; cursor:pointer; transition:all .2s;
+    ">Jodi a</button>
+    <button id="period-btn-week" onclick="setRapòPeriod('week')" style="
+      flex-shrink:0; padding:7px 16px; border-radius:20px; border:1.5px solid #333;
+      background:transparent; color:#777; font-family:'Outfit',sans-serif;
+      font-size:.78rem; font-weight:700; cursor:pointer; transition:all .2s;
+    ">Semèn sa a</button>
+    <button id="period-btn-month" onclick="setRapòPeriod('month')" style="
+      flex-shrink:0; padding:7px 16px; border-radius:20px; border:1.5px solid #333;
+      background:transparent; color:#777; font-family:'Outfit',sans-serif;
+      font-size:.78rem; font-weight:700; cursor:pointer; transition:all .2s;
+    ">Mwa sa a</button>
+
+    <!-- Date nav (shown only in today mode) -->
+    <div id="rapò-date-nav-wrap" style="
+      display:flex; align-items:center; gap:4px; margin-left:auto; flex-shrink:0;
+    ">
+      <button class="date-nav-btn" onclick="navDate(-1)">‹</button>
+      <div class="date-nav-label" id="rapò-date-label" style="font-size:.72rem;white-space:nowrap;"></div>
+      <button class="date-nav-btn" onclick="navDate(1)">›</button>
+    </div>
   </div>
 
-  <div class="kpi-grid" id="kpi-grid"></div>
+  <!-- KPI summary strip -->
+  <div style="padding:12px 14px 4px;">
+    <div id="rapò-period-label" style="font-size:.72rem;color:#555;font-weight:600;margin-bottom:8px;"></div>
+  </div>
 
-  <div class="section-card" id="top-card">
-    <div class="section-head">🏆 Top Pwodwi <span id="top-count"></span></div>
+  <!-- 6 KPI cards -->
+  <div style="padding:0 14px;">
+    <div id="kpi-grid" style="
+      display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px;
+    "></div>
+  </div>
+
+  <!-- Profit waterfall bar -->
+  <div class="section-card" id="profit-waterfall-card" style="margin:0 14px 12px;">
+    <div class="section-head" style="margin-bottom:10px;">📈 Detay Pwofi</div>
+    <div id="profit-waterfall"></div>
+  </div>
+
+  <!-- Top products -->
+  <div class="section-card" id="top-card" style="margin:0 14px 12px;">
+    <div class="section-head">🏆 Top Pwodwi <span id="top-count" style="font-weight:400;font-size:.8rem;color:#555;"></span></div>
     <div id="top-list"></div>
   </div>
 
-  <div class="section-card">
+  <!-- Payment breakdown -->
+  <div class="section-card" style="margin:0 14px 12px;">
     <div class="section-head">💳 Metòd Peman</div>
-    <div class="peman-breakdown" id="peman-bd"></div>
+    <div id="peman-bd"></div>
   </div>
 
-  <div class="section-card" id="tx-card">
-    <div class="section-head">📋 Tranksasyon <span id="tx-count"></span></div>
+  <!-- Transactions -->
+  <div class="section-card" id="tx-card" style="margin:0 14px 12px;">
+    <div class="section-head">📋 Tranksasyon <span id="tx-count" style="font-weight:400;font-size:.8rem;color:#555;"></span></div>
     <div id="tx-list"></div>
   </div>
 
-  <div class="section-card" id="dep-card">
-    <div class="section-head">🧾 Depans <span id="dep-count"></span></div>
+  <!-- Expenses -->
+  <div class="section-card" id="dep-card" style="margin:0 14px 12px;">
+    <div class="section-head">🧾 Depans <span id="dep-count" style="font-weight:400;font-size:.8rem;color:#555;"></span></div>
     <div id="dep-list"></div>
   </div>
 
-  <br>
-  <button class="wa-btn" onclick="sendWhatsApp()">
-    <span>📤</span> Voye Rapò pa WhatsApp
-  </button>
-  <button class="wa-btn" onclick="sendMonthWhatsApp()" style="background:#128C7E;">
-    <span>📆</span> Voye Rapò Mwa pa WhatsApp
-  </button>
+  <div style="padding:0 14px 12px; display:flex; gap:8px; flex-direction:column;">
+    <button class="wa-btn" onclick="sendWhatsApp()">
+      <span>📤</span> Voye Rapò pa WhatsApp
+    </button>
+    <button class="wa-btn" onclick="sendMonthWhatsApp()" style="background:#128C7E;">
+      <span>📆</span> Voye Rapò Mwa pa WhatsApp
+    </button>
+  </div>
 </div>
+
 
 <!-- ══ PAGE: PWODWI ════════════════════════════════════════════════════════ -->
 <div class="page" id="page-pwodwi">
@@ -2291,13 +2338,18 @@ body {
         <input type="text" id="new-name" placeholder="Eks: Dlo, Diri...">
       </div>
       <div class="field" style="flex:1">
-        <label>Pri (HTG)</label>
+        <label>Pri Vant (HTG)</label>
         <input type="number" id="new-price" placeholder="0">
       </div>
     </div>
 
     <div class="field-row">
-      <div class="field">
+      <div class="field" style="flex:1">
+        <label style="color:#f5c542;">💰 Pri Achte (HTG)</label>
+        <input type="number" id="new-cost-price" placeholder="0 (opsyonèl)" style="border-color:rgba(245,197,66,.3);">
+        <div style="font-size:.68rem;color:#555;margin-top:3px;">Itil pou kalkile pwofi reyèl.</div>
+      </div>
+      <div class="field" style="flex:1">
         <label>Kategori</label>
         <select id="new-cat">
           <option value="" selected>-- Chwazi Kategori --</option>
@@ -2309,6 +2361,9 @@ body {
           <option value="Lòt">📦 Lòt</option>
         </select>
       </div>
+    </div>
+
+    <div class="field-row">
       <div class="field">
         <label>Stock Init.</label>
         <input type="number" id="new-stock" placeholder="0">
@@ -4294,147 +4349,298 @@ function navDate(delta) {
   renderRapò();
 }
 
-function renderRapò() {
-  const key = dateKey(rapòDate);
-  const today = new Date(); today.setHours(0,0,0,0);
-  const isToday = key === dateKey(today);
+// ── RAPÒ PERIOD SYSTEM ─────────────────────────────────────────────────────
+let _rapòCurrentPeriod = 'today';
 
-  document.getElementById('rapò-date-label').textContent =
-    isToday ? '📅 Jodi a' : formatDate(rapòDate);
+function setRapòPeriod(period) {
+  _rapòCurrentPeriod = period;
+  // Update pill buttons
+  ['today','week','month'].forEach(p => {
+    const btn = document.getElementById('period-btn-' + p);
+    if (!btn) return;
+    if (p === period) {
+      btn.style.background = '#f5c542';
+      btn.style.color = '#000';
+      btn.style.borderColor = '#f5c542';
+    } else {
+      btn.style.background = 'transparent';
+      btn.style.color = '#777';
+      btn.style.borderColor = '#333';
+    }
+  });
+  // Show/hide date nav (only for 'today' mode)
+  const nav = document.getElementById('rapò-date-nav-wrap');
+  if (nav) nav.style.display = period === 'today' ? 'flex' : 'none';
+  renderRapò();
+}
 
+function _getPeriodTx() {
+  const now = new Date();
   const cashierOnly = isCashierOnly();
-  const dayTx = transactions
-    .filter(t => t.date === key)
+
+  if (_rapòCurrentPeriod === 'today') {
+    const key = dateKey(rapòDate);
+    const tx = transactions
+      .filter(t => t.date === key)
+      .filter(t => !cashierOnly || (cashierSession.id ? t.cashierId === cashierSession.id : t.cashier === cashierSession.name));
+    const dep = cashierOnly ? [] : standaloneDepans.filter(d => d.date === key);
+    return { tx, dep };
+  }
+
+  if (_rapòCurrentPeriod === 'week') {
+    const weekStart = new Date(now);
+    weekStart.setDate(now.getDate() - now.getDay());
+    weekStart.setHours(0,0,0,0);
+    const tx = transactions
+      .filter(t => {
+        const d = new Date(t.date.replace(/\//g, '-'));
+        return d >= weekStart;
+      })
+      .filter(t => !cashierOnly || (cashierSession.id ? t.cashierId === cashierSession.id : t.cashier === cashierSession.name));
+    const dep = cashierOnly ? [] : standaloneDepans.filter(d => {
+      const dd = new Date(d.date.replace(/\//g, '-'));
+      return dd >= weekStart;
+    });
+    return { tx, dep };
+  }
+
+  // month
+  const monthKey = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const tx = transactions
+    .filter(t => {
+      const parts = t.date.split('/');
+      return parts.length === 3 && `${parts[2]}-${parts[1]}` === monthKey;
+    })
     .filter(t => !cashierOnly || (cashierSession.id ? t.cashierId === cashierSession.id : t.cashier === cashierSession.name));
-  const dayStandaloneDep = cashierOnly ? [] : standaloneDepans.filter(d => d.date === key);
+  const dep = cashierOnly ? [] : standaloneDepans.filter(d => {
+    const parts = d.date.split('/');
+    return parts.length === 3 && `${parts[2]}-${parts[1]}` === monthKey;
+  });
+  return { tx, dep };
+}
 
-  // KPIs — include both tx-depans and standalone depans
-  const totalVant = dayTx.reduce((s,t) => s+t.totalVant, 0);
-  const totalDepTx = dayTx.reduce((s,t) => s+t.totalDep, 0);
-  const totalDepStandalone = dayStandaloneDep.reduce((s,d) => s+d.amt, 0);
-  const totalDep = cashierOnly ? 0 : totalDepTx + totalDepStandalone;
+function renderRapò() {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const key = dateKey(rapòDate);
+  const isToday = key === dateKey(today);
+  const cashierOnly = isCashierOnly();
 
-  const totalProfitProducts = cashierOnly ? 0 : dayTx.reduce((s,t) => {
-    return s + (t.totalProfitProducts || 0);
+  // Date label
+  document.getElementById('rapò-date-label').textContent = isToday ? '📅 Jodi a' : formatDate(rapòDate);
+
+  // Period label
+  const periodLabels = {
+    today: isToday ? '📅 Jodi a' : '📅 ' + formatDate(rapòDate),
+    week:  '📆 Semèn sa a',
+    month: '🗓 Mwa sa a'
+  };
+  const periodLabelEl = document.getElementById('rapò-period-label');
+  if (periodLabelEl) periodLabelEl.textContent = periodLabels[_rapòCurrentPeriod] || '';
+
+  // Get filtered data
+  const { tx: filtTx, dep: filtDep } = _getPeriodTx();
+
+  // ── Core metrics ──
+  const totalVant       = filtTx.reduce((s,t) => s + t.totalVant, 0);
+  const totalCOGS       = cashierOnly ? 0 : filtTx.reduce((s,t) => {
+    return s + t.items.reduce((si,i) => si + ((i.cost || 0) * i.qty), 0);
   }, 0);
+  const grossProfit     = totalCOGS > 0 ? totalVant - totalCOGS : filtTx.reduce((s,t) => s + (t.totalProfitProducts || 0), 0);
+  const hasCOGS         = totalCOGS > 0;
 
-  const baseProfit = totalProfitProducts > 0 ? totalProfitProducts : totalVant;
-  const pwòfi = baseProfit - totalDep;
+  const totalDepTx      = filtTx.reduce((s,t) => s + (t.totalDep || 0), 0);
+  const totalDepSt      = filtDep.reduce((s,d) => s + d.amt, 0);
+  const totalDep        = cashierOnly ? 0 : totalDepTx + totalDepSt;
 
-  const nbreTx = dayTx.length;
+  const netProfit       = grossProfit - totalDep;
+  const nbreTx          = filtTx.length;
 
-  document.getElementById('kpi-grid').innerHTML = `
-    <div class="kpi-card gold">
-      <div class="kpi-label">${cashierOnly ? 'Vant Mwen' : 'Vant Total'}</div>
-      <div class="kpi-val">${fmtK(totalVant)}</div>
-      <div class="kpi-sub">
-        ${totalProfitProducts > 0 ? 'Pwofi pwodwi: ' + fmtK(totalProfitProducts) : 'HTG jounen an'}
-      </div>
-    </div>
-    ${cashierOnly ? '' : `<div class="kpi-card ${pwòfi>=0?'green':'red'}">
-      <div class="kpi-label">Pwòfi Net</div>
-      <div class="kpi-val">${fmtK(pwòfi)}</div>
-      <div class="kpi-sub">
-        ${totalProfitProducts > 0 ? 'Sou pri achte + depans' : 'Apre depans'}
-      </div>
-    </div>`}
-    ${cashierOnly ? '' : `<div class="kpi-card red">
-      <div class="kpi-label">Depans</div>
-      <div class="kpi-val">${fmtK(totalDep)}</div>
-      <div class="kpi-sub">HTG jounen an</div>
-    </div>`}
-    <div class="kpi-card blue">
-      <div class="kpi-label">Tranksasyon</div>
-      <div class="kpi-val">${nbreTx}</div>
-      <div class="kpi-sub">Vant fèt</div>
-    </div>`;
+  // Total active debts
+  const totalDets = cashierOnly ? 0 : dets.filter(d => d.type === 'dwe').reduce((s,d) => s + (d.amt - (d.paid || 0)), 0);
 
-  // Top products
+  // ── KPI cards (6 cards) ──
+  const kpiCards = [
+    {
+      label: cashierOnly ? 'Vant Mwen' : '💰 Vant Total',
+      val: fmtK(totalVant), unit: 'HTG',
+      sub: `${nbreTx} tranksasyon`,
+      color: 'gold', textColor: '#f5c542'
+    },
+    {
+      label: '📦 Pri Achte (COGS)',
+      val: hasCOGS ? fmtK(totalCOGS) : '—',
+      unit: hasCOGS ? 'HTG' : '',
+      sub: hasCOGS ? 'Koute pwodwi yo' : 'Antre pri achte',
+      color: 'blue', textColor: '#40c4ff'
+    },
+    {
+      label: '📈 Pwofi Brit',
+      val: fmtK(grossProfit), unit: 'HTG',
+      sub: hasCOGS ? `Maji: ${totalVant > 0 ? Math.round((grossProfit/totalVant)*100) : 0}%` : 'Vant - COGS',
+      color: grossProfit >= 0 ? 'green' : 'red', textColor: grossProfit >= 0 ? '#4caf50' : '#ff3d57'
+    },
+    {
+      label: cashierOnly ? '' : '🧾 Depans',
+      val: cashierOnly ? '' : fmtK(totalDep), unit: cashierOnly ? '' : 'HTG',
+      sub: cashierOnly ? '' : 'Jounen/Peryòd sa a',
+      color: 'red', textColor: '#ff3d57'
+    },
+    {
+      label: cashierOnly ? '' : '✅ Pwofi Net',
+      val: cashierOnly ? '' : fmtK(netProfit), unit: cashierOnly ? '' : 'HTG',
+      sub: cashierOnly ? '' : 'Pwofi Brit - Depans',
+      color: netProfit >= 0 ? 'green' : 'red', textColor: netProfit >= 0 ? '#4caf50' : '#ff3d57'
+    },
+    {
+      label: cashierOnly ? '' : '💳 Kredi Kliyan',
+      val: cashierOnly ? '' : fmtK(totalDets), unit: cashierOnly ? '' : 'HTG',
+      sub: cashierOnly ? '' : 'Dèt aktif total',
+      color: 'orange', textColor: '#ff9800'
+    }
+  ].filter(c => c.label);
+
+  document.getElementById('kpi-grid').innerHTML = kpiCards.map(c => `
+    <div style="
+      background:#161616; border:1px solid #222; border-radius:14px;
+      padding:14px 12px; position:relative; overflow:hidden;
+    ">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:${c.textColor};opacity:.6;border-radius:14px 14px 0 0;"></div>
+      <div style="font-size:.7rem;color:#666;font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">${c.label}</div>
+      <div style="font-size:1.45rem;font-weight:900;color:${c.textColor};font-family:'Space Mono',monospace;line-height:1;">${c.val}</div>
+      <div style="font-size:.65rem;color:#555;margin-top:2px;">${c.unit}</div>
+      <div style="font-size:.68rem;color:#555;margin-top:6px;font-weight:600;">${c.sub}</div>
+    </div>`).join('');
+
+  // ── Profit waterfall ──
+  const waterfallEl = document.getElementById('profit-waterfall');
+  if (waterfallEl && !cashierOnly) {
+    const bars = [
+      { label: 'Vant', val: totalVant, color: '#f5c542' },
+      ...(hasCOGS ? [{ label: 'COGS', val: -totalCOGS, color: '#ff9800' }] : []),
+      { label: 'Pwofi Brit', val: grossProfit, color: grossProfit >= 0 ? '#4caf50' : '#ff3d57' },
+      ...(totalDep > 0 ? [{ label: 'Depans', val: -totalDep, color: '#ff3d57' }] : []),
+      { label: 'Pwofi Net', val: netProfit, color: netProfit >= 0 ? '#4caf50' : '#ff3d57' }
+    ];
+    const maxAbs = Math.max(...bars.map(b => Math.abs(b.val)), 1);
+    waterfallEl.innerHTML = bars.map(b => `
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <div style="font-size:.72rem;color:#888;font-weight:700;min-width:70px;flex-shrink:0;">${b.label}</div>
+        <div style="flex:1;height:22px;background:#1a1a1a;border-radius:6px;overflow:hidden;position:relative;">
+          <div style="position:absolute;top:0;${b.val < 0 ? 'right' : 'left'}:0;height:100%;width:${Math.abs(b.val/maxAbs*100).toFixed(1)}%;background:${b.color};opacity:.85;border-radius:6px;transition:width .6s ease;"></div>
+        </div>
+        <div style="font-size:.72rem;font-family:'Space Mono',monospace;color:${b.color};min-width:60px;text-align:right;font-weight:700;">${b.val < 0 ? '-' : '+'}${fmtK(Math.abs(b.val))}</div>
+      </div>`).join('');
+  } else if (waterfallEl) {
+    waterfallEl.innerHTML = '<div style="font-size:.78rem;color:#555;padding:8px 0;">— Disponib pou Admin sèlman —</div>';
+  }
+
+  // ── Top products with margin ──
   const byProd = {};
-  dayTx.forEach(t => t.items.forEach(i => {
-    byProd[i.name] = byProd[i.name] || {emoji:i.emoji, total:0, qty:0};
-    byProd[i.name].total += i.total;
-    byProd[i.name].qty += i.qty;
+  filtTx.forEach(t => t.items.forEach(i => {
+    byProd[i.name] = byProd[i.name] || { emoji: i.emoji, total: 0, qty: 0, profit: 0, hasCost: false };
+    byProd[i.name].total  += i.total;
+    byProd[i.name].qty    += i.qty;
+    byProd[i.name].profit += (i.profit || 0);
+    if ((i.cost || 0) > 0) byProd[i.name].hasCost = true;
   }));
-  const topArr = Object.entries(byProd).sort((a,b)=>b[1].total-a[1].total);
+  const topArr = Object.entries(byProd).sort((a,b) => b[1].total - a[1].total);
   const maxV = topArr[0]?.[1].total || 1;
 
-  document.getElementById('top-count').textContent = topArr.length + ' pwodwi';
+  document.getElementById('top-count').textContent = topArr.length ? topArr.length + ' pwodwi' : '';
   document.getElementById('top-list').innerHTML = topArr.length === 0
-    ? `<div class="empty-state"><div class="empty-icon">📦</div><div class="empty-text">Pa gen vant jou sa a</div></div>`
-    : topArr.slice(0,5).map(([name,d]) => `
-      <div class="bar-item">
-        <div class="bar-top">
-          <div class="bar-name">${d.emoji} ${name}</div>
-          <div class="bar-amt">${d.total.toLocaleString('fr-HT')} HTG</div>
-        </div>
-        <div class="bar-track"><div class="bar-fill" style="width:${(d.total/maxV*100).toFixed(1)}%"></div></div>
-      </div>`).join('');
+    ? `<div class="empty-state"><div class="empty-icon">📦</div><div class="empty-text">Pa gen vant pou peryòd sa a</div></div>`
+    : topArr.slice(0, 8).map(([name, d]) => {
+        const marginPct = d.hasCost && d.total > 0 ? Math.round((d.profit / d.total) * 100) : null;
+        return `
+        <div class="bar-item" style="margin-bottom:10px;">
+          <div class="bar-top" style="margin-bottom:4px;">
+            <div class="bar-name">${d.emoji || '📦'} ${name} <span style="color:#555;font-size:.7rem;">×${d.qty}</span></div>
+            <div style="display:flex;align-items:center;gap:6px;">
+              ${marginPct !== null ? `<span style="font-size:.68rem;color:${marginPct>=20?'#4caf50':marginPct>=0?'#f5c542':'#ff3d57'};font-weight:700;background:${marginPct>=20?'rgba(76,175,80,.12)':marginPct>=0?'rgba(245,197,66,.12)':'rgba(255,61,87,.12)'};padding:1px 6px;border-radius:10px;">${marginPct}% maji</span>` : ''}
+              <div class="bar-amt">${d.total.toLocaleString('fr-HT')} HTG</div>
+            </div>
+          </div>
+          <div class="bar-track"><div class="bar-fill" style="width:${(d.total/maxV*100).toFixed(1)}%"></div></div>
+        </div>`;
+      }).join('');
 
-  // Peman breakdown
-  const cash = dayTx.filter(t=>t.peman==='Cash').reduce((s,t)=>s+t.totalVant,0);
-  const mc = dayTx.filter(t=>t.peman==='NatCash').reduce((s,t)=>s+t.totalVant,0);
-  const kr = dayTx.filter(t=>t.peman==='Kredi').reduce((s,t)=>s+t.totalVant,0);
-  document.getElementById('peman-bd').innerHTML = `
-    <div class="pb-item"><div class="pb-label">💵 Cash</div><div class="pb-val" style="color:var(--green)">${fmtK(cash)}</div></div>
-    <div class="pb-item"><div class="pb-label">💚 NatCash</div><div class="pb-val" style="color:var(--gold)">${fmtK(mc)}</div></div>
-    <div class="pb-item"><div class="pb-label">📋 Kredi</div><div class="pb-val" style="color:var(--red)">${fmtK(kr)}</div></div>`;
+  // ── Payment breakdown with visual bars ──
+  const cash = filtTx.filter(t => t.peman === 'Cash').reduce((s,t) => s + t.totalVant, 0);
+  const mc   = filtTx.filter(t => t.peman === 'NatCash').reduce((s,t) => s + t.totalVant, 0);
+  const kr   = filtTx.filter(t => t.peman === 'Kredi').reduce((s,t) => s + t.totalVant, 0);
+  const mc2  = filtTx.filter(t => t.peman === 'MonCash').reduce((s,t) => s + t.totalVant, 0);
+  const maxP = Math.max(cash, mc, kr, mc2, 1);
+  document.getElementById('peman-bd').innerHTML = [
+    { label: '💵 Cash',    val: cash, color: '#4caf50' },
+    { label: '💚 NatCash', val: mc,   color: '#f5c542' },
+    { label: '📱 MonCash', val: mc2,  color: '#9c27b0' },
+    { label: '📋 Kredi',   val: kr,   color: '#ff3d57'  }
+  ].filter(p => p.val > 0 || p.label === '💵 Cash').map(p => `
+    <div style="margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+        <div style="font-size:.78rem;color:#aaa;font-weight:600;">${p.label}</div>
+        <div style="font-size:.82rem;font-family:'Space Mono',monospace;color:${p.color};font-weight:700;">${fmtK(p.val)} HTG</div>
+      </div>
+      <div style="height:6px;background:#1a1a1a;border-radius:4px;overflow:hidden;">
+        <div style="height:100%;width:${(p.val/maxP*100).toFixed(1)}%;background:${p.color};border-radius:4px;transition:width .5s ease;"></div>
+      </div>
+    </div>`).join('');
 
-  // Transactions
-  document.getElementById('tx-count').textContent = nbreTx;
+  // ── Transactions ──
+  document.getElementById('tx-count').textContent = nbreTx ? nbreTx + ' vant' : '';
   document.getElementById('tx-list').innerHTML = nbreTx === 0
-    ? `<div class="empty-state"><div class="empty-icon">🧾</div><div class="empty-text">Okenn tranksasyon jou sa a</div></div>`
-    : [...dayTx].reverse().map(t => `
+    ? `<div class="empty-state"><div class="empty-icon">🧾</div><div class="empty-text">Okenn tranksasyon pou peryòd sa a</div></div>`
+    : [...filtTx].reverse().map(t => `
       <div class="tx-item">
-        <div class="tx-emoji">${t.items[0]?.emoji||'🛒'}</div>
+        <div class="tx-emoji">${t.items[0]?.emoji || '🛒'}</div>
         <div class="tx-info">
-          <div class="tx-name">${t.items.map(i=>i.name).join(', ').slice(0,30)}${t.items.map(i=>i.name).join(', ').length>30?'...':''}</div>
+          <div class="tx-name">${t.items.map(i => i.name).join(', ').slice(0,35)}${t.items.map(i=>i.name).join(', ').length > 35 ? '…' : ''}</div>
           <div class="tx-meta">
-            ${t.time} · ${t.items.length} atik
-            ${t.peman === 'Kredi' && t.krediClientName ? ' · Kliyan: ' + t.krediClientName : ''}
+            ${t.time || t.date} · ${t.items.length} atik
+            ${t.peman === 'Kredi' && t.krediClientName ? ' · ' + t.krediClientName : ''}
+            ${t.cashier && t.cashier !== 'Admin' ? ' · ' + t.cashier : ''}
           </div>
         </div>
         <div class="tx-right">
           <div class="tx-amt">${t.totalVant.toLocaleString('fr-HT')}</div>
-          ${cashierOnly ? '' : `<div style="font-size:0.65rem;color:var(--green);font-family:'Space Mono',monospace;margin-top:2px;">
-            + ${t.pwòfi.toLocaleString('fr-HT')} pwofi
-          </div>`}
-          <div class="tx-pay ${t.peman.toLowerCase().replace('natcash','natcash')}">${t.peman}</div>
+          ${!cashierOnly && (t.pwòfi || t.totalProfitProducts) ? `<div style="font-size:.63rem;color:#4caf50;font-family:'Space Mono',monospace;margin-top:2px;">+${(t.pwòfi || t.totalProfitProducts || 0).toLocaleString('fr-HT')}</div>` : ''}
+          <div class="tx-pay ${(t.peman||'').toLowerCase()}">${t.peman}</div>
         </div>
       </div>`).join('');
 
-  // Depans — merge tx-linked + standalone
-  const allDepTx = dayTx.flatMap(t => (t.depans||[]).map(d => ({...d, src:'tx'})));
-  const allDepSt = dayStandaloneDep.map(d => ({label:d.label, amt:d.amt, cat:d.cat, time:d.time, src:'standalone', id:d.id}));
-  const allDep = [...allDepTx, ...allDepSt];
+  // ── Expenses ──
+  const allDepTx = filtTx.flatMap(t => (t.depans || []).map(d => ({...d, src:'tx'})));
+  const allDepSt = filtDep.map(d => ({label:d.label, amt:d.amt, cat:d.cat, time:d.time, src:'standalone', id:d.id}));
+  const allDep   = [...allDepTx, ...allDepSt];
 
-  document.getElementById('dep-count').textContent = allDep.length;
+  document.getElementById('dep-count').textContent = allDep.length ? allDep.length + '' : '';
   document.getElementById('dep-list').innerHTML = allDep.length === 0
     ? `<div class="empty-state" style="padding:16px"><div class="empty-icon" style="font-size:1.5rem">🧾</div><div class="empty-text">Pa gen depans anrejistre</div></div>`
     : allDep.map(d => `
       <div class="dep-item">
-        <div class="dep-name">🧾 ${d.label}${d.cat ? ' <span style="color:var(--gray);font-size:0.72rem">· '+d.cat+'</span>' : ''}</div>
+        <div class="dep-name">🧾 ${d.label}${d.cat ? ` <span style="color:var(--gray);font-size:.72rem">· ${d.cat}</span>` : ''}</div>
         <div class="dep-amt">- ${d.amt.toLocaleString('fr-HT')} HTG</div>
       </div>`).join('');
 }
 
-
-
 function fmtK(n) {
-  if (Math.abs(n) >= 1000) return (n/1000).toFixed(1)+'k';
+  if (Math.abs(n) >= 1000) return (n/1000).toFixed(1) + 'k';
   return n.toLocaleString('fr-HT');
 }
+
+
 
 // ── PROD MGMT ──────────────────────────────────────────────────────────────
 function addProduct() {
   const name = document.getElementById('new-name').value.trim();
   const price = parseFloat(document.getElementById('new-price').value) || 0;
-  const cat = document.getElementById('new-cat').value; // can be empty ""
+  const costPrice = parseFloat(document.getElementById('new-cost-price')?.value) || 0;
+  const cat = document.getElementById('new-cat').value;
   const stock = parseInt(document.getElementById('new-stock').value) || 0;
-  const image = uploadedProductImage; // Base64 image data
+  const image = uploadedProductImage;
 
   if (!name || price <= 0) {
-    showToast('⚠️ Ranpli Non ak Pri!'); return;
+    showToast('⚠️ Ranpli Non ak Pri Vant!'); return;
   }
 
   const isDigital = selectedProductType === 'digital';
@@ -4443,17 +4649,23 @@ function addProduct() {
 
   const newProd = {
     id: Date.now(),
-    name, 
-    image: image || undefined, 
-    price, 
-    cat: cat || (isDigital ? 'Dijital' : 'Lòt'), 
+    name,
+    image: image || undefined,
+    price,
+    cat: cat || (isDigital ? 'Dijital' : 'Lòt'),
     stock: isDigital ? 999 : stock,
     isDigital,
     accessLink: accessLink || undefined,
     deliveryMsg: deliveryMsg || undefined
   };
 
-  newProd.cat = cat || (isDigital ? 'Dijital' : "");
+  newProd.cat = cat || (isDigital ? 'Dijital' : '');
+
+  // Save cost price if provided
+  if (costPrice > 0) {
+    costPrices[newProd.id] = costPrice;
+    localStorage.setItem('br_costs', JSON.stringify(costPrices));
+  }
 
   products.push(newProd);
   saveData();
@@ -4462,21 +4674,28 @@ function addProduct() {
   document.getElementById('new-name').value = '';
   document.getElementById('new-price').value = '';
   document.getElementById('new-stock').value = '';
-  document.getElementById('new-cat').value = ''; // Reset select to blank
-  
+  document.getElementById('new-cat').value = '';
+  const cpField = document.getElementById('new-cost-price');
+  if (cpField) cpField.value = '';
+
   if (isDigital) {
     document.getElementById('new-access-link').value = '';
     document.getElementById('new-delivery-msg').value = '';
   }
-  
+
   clearProductImage();
-  setProductType('physical'); // Reset selector back to physical
+  setProductType('physical');
 
   renderProdMgmt();
   renderCategories();
   renderProducts();
-  showToast('✅ ' + name + ' ajoute!');
+  renderCostPriceList();
+
+  const profitPct = costPrice > 0 ? Math.round(((price - costPrice)/price)*100) : null;
+  showToast('✅ ' + name + ' ajoute!' + (profitPct !== null ? ' Maji: ' + profitPct + '%' : ' (Ajoute pri achte pou wè maji)'));
 }
+
+
 
 function deleteProduct(id) {
   if (!confirm('Efase pwodwi sa a?')) return;
