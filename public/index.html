@@ -3864,9 +3864,11 @@ let deliverySettings = JSON.parse(localStorage.getItem('br_delivery') || '{"base
 let cashierSession  = JSON.parse(localStorage.getItem('br_cashier')  || '{"role":"admin","name":"Admin","shift":"Jounen"}');
 let cashiers        = JSON.parse(localStorage.getItem('br_cashiers') || '[]');
 let deviceRegistry  = JSON.parse(localStorage.getItem('br_devices')  || '[]');
-// Cost prices & debts — declared here to avoid TDZ crashes
-let costPrices = JSON.parse(localStorage.getItem('br_costs') || '{}');
-let dets       = JSON.parse(localStorage.getItem('br_dets')  || '[]');
+// Cost prices, debts & shop info — all declared here to avoid TDZ
+let costPrices      = JSON.parse(localStorage.getItem('br_costs') || '{}');
+let dets            = JSON.parse(localStorage.getItem('br_dets')  || '[]');
+let shopInfo        = JSON.parse(localStorage.getItem('br_shop')  || '{"name":"Ma Boutique","tel":"","addr":"","msg":"M\u00e8si pou konfyans ou!"}');
+let registeredShops = JSON.parse(localStorage.getItem('br_registered_shops') || '[]');
 let cart = {};
 let selectedPeman = 'Cash';
 let rapòDate = new Date();
@@ -3924,28 +3926,42 @@ function doQuickSale(method) {
   if (picker) picker.remove();
 
   var ids = Object.keys(cart).filter(function(k){ return cart[k] > 0; });
-  if (ids.length === 0) { alert('Panye a vid!'); return; }
+  if (ids.length === 0) {
+    _qToast('⚠️ Panye a vid!');
+    return;
+  }
 
   // Kredi: ask client name
   var krediName = '';
   if (method === 'Kredi') {
-    krediName = (prompt('Non kliyan kredi a:') || '').trim();
-    if (!krediName) { alert('Non kliyan obligatwa pou Kredi!'); return; }
+    krediName = (prompt('\ud83d\udcdd Non kliyan kredi a (obligatwa):') || '').trim();
+    if (!krediName) { _qToast('⚠️ Non kliyan obligatwa pou Kredi!'); return; }
   }
 
-  // Build items
+  // NatCash / MonCash: ask phone number
+  var mobilePhone = '';
+  if (method === 'NatCash' || method === 'MonCash') {
+    mobilePhone = (prompt('\ud83d\udcf1 Nimewo ' + method + ' kliyan an:') || '').trim();
+    if (!mobilePhone) {
+      _qToast('⚠️ Nimewo telefon obligatwa pou ' + method + '!');
+      return;
+    }
+  }
+
+  // Stock check + build items
+  var stockError = false;
   var items = ids.map(function(k) {
     var p = products.find(function(p){ return p.id == k; });
     if (!p) return null;
     var cost = costPrices[p.id] || 0;
     var qty = cart[k];
-    // Stock check
     if (p.stock !== 999 && qty > p.stock) {
-      alert('⚠️ Stock pa sifi pou ' + p.name + '! Disponib: ' + p.stock);
+      _qToast('⚠️ Stock pa sifi pou ' + p.name + '! Disponib: ' + p.stock + ', Ou vle: ' + qty);
+      stockError = true;
       return null;
     }
     return {
-      id: p.id, name: p.name, emoji: p.emoji || '📦', qty: qty,
+      id: p.id, name: p.name, emoji: p.emoji || '\ud83d\udce6', qty: qty,
       price: p.price, cost: cost,
       total: p.price * qty,
       profit: (p.price - cost) * qty,
@@ -3954,7 +3970,7 @@ function doQuickSale(method) {
     };
   }).filter(Boolean);
 
-  if (items.length === 0) return;
+  if (stockError || items.length === 0) return;
 
   var totalVant = items.reduce(function(s,i){ return s + i.total; }, 0);
   var totalPft  = items.reduce(function(s,i){ return s + i.profit; }, 0);
@@ -3970,28 +3986,27 @@ function doQuickSale(method) {
     items: items, depans: [], totalVant: totalVant, totalDep: 0,
     totalProfitProducts: totalPft,
     pwòfi: totalPft, peman: method,
-    krediClientName: krediName, clientPhone: ''
+    krediClientName: krediName,
+    clientPhone: mobilePhone
   };
 
   // Deduct stock
   items.forEach(function(item) {
     var prod = products.find(function(p){ return p.id === item.id; });
-    if (prod && prod.stock !== 999) {
-      prod.stock = Math.max(0, prod.stock - item.qty);
-    }
+    if (prod && prod.stock !== 999) prod.stock = Math.max(0, prod.stock - item.qty);
   });
 
-  // Add debt if kredi
+  // Add to debts if Kredi
   if (method === 'Kredi') {
     dets.push({
       id: Date.now() + 1, type: 'dwe', non: krediName,
       amt: totalVant, reste: totalVant,
-      nòt: 'Vant kredi: ' + items.map(function(i){ return i.name + ' x' + i.qty; }).join(', '),
+      nòt: 'Vant kredi: ' + items.map(function(i){ return i.name+' x'+i.qty; }).join(', '),
       date: '', freq: 'chak-jou', createdAt: dateKey(new Date()), payments: []
     });
   }
 
-  // Save
+  // Persist
   transactions.push(tx);
   saveData();
 
@@ -4000,19 +4015,25 @@ function doQuickSale(method) {
   selectedPeman = 'Cash';
   updateCartBar();
   renderProducts();
+  try { renderAdminPage(); } catch(e){}
 
   // Success toast
-  var toast = document.getElementById('toast');
-  if (toast) {
-    toast.textContent = '✅ Vant sove! ' + items.length + ' atik — ' + totalVant.toLocaleString('fr-HT') + ' HTG [' + method + ']';
-    toast.classList.add('show');
-    setTimeout(function(){ toast.classList.remove('show'); }, 3500);
-  }
+  _qToast('✅ Vant sove! ' + items.length + ' atik — ' + totalVant.toLocaleString('fr-HT') + ' HTG [' + method + ']');
 
   // Show receipt
-  try { showResi(tx); } catch(e) { console.warn('showResi error:', e); }
-  try { renderAdminPage(); } catch(e) {}
+  showResi(tx);
 }
+
+// Quick toast helper (works even before DOM is fully ready)
+function _qToast(msg) {
+  var t = document.getElementById('toast');
+  if (!t) { console.warn('Toast:', msg); return; }
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(window._qToastTimer);
+  window._qToastTimer = setTimeout(function(){ t.classList.remove('show'); }, 3500);
+}
+
 
 // Stock helpers
 function getStockSold(productId) {
@@ -6187,13 +6208,13 @@ function renderCashierSummary() {
 }
 
 // ── SHOP INFO ──────────────────────────────────────────────────────────────
-let shopInfo = JSON.parse(localStorage.getItem('br_shop') || '{"name":"Ma Boutique","tel":"","addr":"","msg":"Mèsi pou konfyans ou!"}');
-let registeredShops = JSON.parse(localStorage.getItem('br_registered_shops') || '[]');
+// shopInfo & registeredShops declared at top — see state block (line ~3870)
 let onlineShopSyncMode = 'local';
 const ONLINE_SHOPS_API = API_BASE_URL + '/api/shops';
-let localTestMode = localStorage.getItem('br_local_test_mode') === 'yes';
+let localTestMode   = localStorage.getItem('br_local_test_mode') === 'yes';
 let localTestShopId = localStorage.getItem('br_local_test_shop_id') || '';
 let appVersion = localStorage.getItem('br_version') || '2.0.0';
+
 let appBrand = JSON.parse(localStorage.getItem('br_brand') || '{"appName":"ClairMarché POS","developer":"Klè Tech"}');
 
 function isLocalTestMode() {
