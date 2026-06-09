@@ -2299,6 +2299,22 @@ body {
     <div id="peman-bd"></div>
   </div>
 
+  <!-- Istwa Vant — chak vant ou ka reenprime oswa voye -->
+  <div class="section-card" style="margin:0 14px 12px;">
+    <div class="section-head">🗂️ Istwa Vant <span id="rapò-history-count" style="font-weight:400;font-size:.8rem;color:#555;"></span></div>
+    <div style="padding:0 12px 12px;display:flex;gap:8px;">
+      <input type="date" id="rapò-hist-date" onchange="renderRapòHistory()" style="flex:1;background:var(--s3);border:1px solid var(--border);border-radius:8px;padding:8px;color:var(--white);font-family:'Outfit',sans-serif;font-size:.82rem;outline:none;">
+      <select id="rapò-hist-type" onchange="renderRapòHistory()" style="flex:1;background:var(--s3);border:1px solid var(--border);border-radius:8px;padding:8px;color:var(--white);font-family:'Outfit',sans-serif;font-size:.82rem;outline:none;">
+        <option value="all">Tout peman</option>
+        <option value="Cash">💵 Cash</option>
+        <option value="NatCash">💚 NatCash</option>
+        <option value="MonCash">📱 MonCash</option>
+        <option value="Kredi">📋 Kredi</option>
+      </select>
+    </div>
+    <div id="rapò-history-list" style="padding:0 12px 12px;"></div>
+  </div>
+
   <!-- Transactions -->
   <div class="section-card" id="tx-card" style="margin:0 14px 12px;">
     <div class="section-head">📋 Tranksasyon <span id="tx-count" style="font-weight:400;font-size:.8rem;color:#555;"></span></div>
@@ -4018,13 +4034,11 @@ function doQuickSale(method) {
   updateCartBar();
   renderProducts();
 
-  // Success toast — show first
-  _qToast('✅ Vant sove! ' + items.length + ' atik — ' + totalVant.toLocaleString('fr-HT') + ' HTG [' + method + ']');
+  // Show receipt IMMEDIATELY (z-index 99998 ensures it's on top of everything)
+  showResi(tx);
 
-  // Show receipt after a short delay so toast is visible
-  setTimeout(function() {
-    showResi(tx);
-  }, 350);
+  // Success toast after receipt opens
+  _qToast('✅ Vant sove! ' + items.length + ' atik — ' + totalVant.toLocaleString('fr-HT') + ' HTG [' + method + ']');
 
   // Refresh admin data silently
   try { renderAdminPage(); } catch(e){}
@@ -6171,26 +6185,87 @@ function renderSalesHistory() {
   const date = document.getElementById('history-date')?.value;
   const type = document.getElementById('history-type')?.value || 'all';
   const q = (document.getElementById('history-search')?.value || '').toLowerCase().trim();
-  let list = [...transactions].sort((a,b)=>b.id-a.id);
+  let list = [...transactions].sort((a,b) => b.id - a.id);
   if (date) list = list.filter(t => t.date === date);
   if (type !== 'all') list = list.filter(t => t.peman === type);
   if (q) list = list.filter(t => {
-    const text = `${t.id} ${t.deviceId || ''} ${t.shopName || ''} ${t.customer || ''} ${t.krediClientName || ''} ${t.cashier || ''} ${t.items.map(i=>i.name).join(' ')}`.toLowerCase();
+    const text = `${t.id} ${t.deviceId||''} ${t.shopName||''} ${t.customer||''} ${t.krediClientName||''} ${t.cashier||''} ${t.items.map(i=>i.name).join(' ')}`.toLowerCase();
     return text.includes(q);
   });
-  document.getElementById('history-count').textContent = list.length;
-  el.innerHTML = list.length === 0 ? `<div class="empty-state"><div class="empty-text">Pa gen vant pou filtè sa a.</div></div>` :
-    list.slice(0,80).map(t => `
+  const countEl = document.getElementById('history-count');
+  if (countEl) countEl.textContent = list.length;
+  el.innerHTML = list.length === 0
+    ? `<div class="empty-state"><div class="empty-text">Pa gen vant pou filtè sa a.</div></div>`
+    : list.slice(0, 80).map(t => `
       <div class="tx-history-item">
         <div class="tx-history-top">
-          <div>
+          <div style="flex:1;min-width:0;">
             <div class="tx-history-title">#BR-${String(t.id).slice(-6)} · ${t.channel === 'online' ? 'Online' : 'Boutique'}</div>
-            <div class="tx-history-meta">${t.date} ${t.time} · ${t.peman}<br>Caissier: ${t.cashier || 'Admin'} · Aparèy: ${t.deviceId || 'N/A'}${t.shopName ? ' · Boutik: '+t.shopName : ''}${t.customer ? ' · Kliyan: '+t.customer : ''}<br>${t.items.map(i=>i.name+' x'+i.qty).join(', ')}</div>
+            <div class="tx-history-meta">${t.date} ${t.time} · ${t.peman}<br>Caissier: ${t.cashier || 'Admin'}${t.krediClientName ? ' · Kliyan: <b>'+t.krediClientName+'</b>' : ''}<br>${t.items.map(i => i.name + ' x' + i.qty).join(', ')}</div>
           </div>
-          <div class="tx-history-total">${t.totalVant.toLocaleString('fr-HT')} HTG</div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+            <div class="tx-history-total">${t.totalVant.toLocaleString('fr-HT')} HTG</div>
+            <div style="display:flex;gap:6px;">
+              <button onclick="reprintResi(${t.id})" style="padding:5px 10px;border:none;border-radius:8px;background:rgba(245,197,66,.15);color:#f5c542;font-family:'Outfit',sans-serif;font-size:.72rem;font-weight:700;cursor:pointer;">🖨 Resi</button>
+              <button onclick="shareResiWA(${t.id})" style="padding:5px 10px;border:none;border-radius:8px;background:rgba(37,211,102,.1);color:#25d366;font-family:'Outfit',sans-serif;font-size:.72rem;font-weight:700;cursor:pointer;">📤 WA</button>
+            </div>
+          </div>
         </div>
       </div>`).join('');
 }
+
+function reprintResi(txId) {
+  var tx = transactions.find(function(t){ return t.id === txId; });
+  if (!tx) { _qToast('⚠️ Vant pa jwenn!'); return; }
+  showResi(tx);
+}
+
+function shareResiWA(txId) {
+  var tx = transactions.find(function(t){ return t.id === txId; });
+  if (!tx) { _qToast('⚠️ Vant pa jwenn!'); return; }
+  lastTx = tx;
+  resiWhatsApp();
+}
+
+function renderRapòHistory() {
+  var el = document.getElementById('rapò-history-list');
+  if (!el) return;
+  var dateVal = document.getElementById('rapò-hist-date')?.value || '';
+  var typeVal = document.getElementById('rapò-hist-type')?.value || 'all';
+  var list = transactions.slice().sort(function(a,b){ return b.id - a.id; });
+  if (dateVal) list = list.filter(function(t){ return t.date === dateVal; });
+  if (typeVal !== 'all') list = list.filter(function(t){ return t.peman === typeVal; });
+  var countEl = document.getElementById('rapò-history-count');
+  if (countEl) countEl.textContent = list.length + ' vant';
+  if (list.length === 0) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-text">Pa gen vant pou filtè sa a.</div></div>';
+    return;
+  }
+  el.innerHTML = list.slice(0, 50).map(function(t) {
+    var resiNum = '#BR-' + String(t.id).slice(-6);
+    var items = t.items.map(function(i){ return i.name + ' ×' + i.qty; }).join(', ');
+    var pemanIcon = t.peman === 'Cash' ? '💵' : t.peman === 'NatCash' ? '💚' : t.peman === 'MonCash' ? '📱' : '📋';
+    return '<div class="tx-history-item">'
+      + '<div class="tx-history-top">'
+      + '<div style="flex:1;min-width:0;">'
+      + '<div class="tx-history-title">' + resiNum + ' · ' + pemanIcon + ' ' + t.peman + '</div>'
+      + '<div class="tx-history-meta">' + t.date + ' ' + t.time + ' · ' + (t.cashier||'Admin')
+      + (t.krediClientName ? ' · <b>' + t.krediClientName + '</b>' : '')
+      + '<br>' + items + '</div>'
+      + '</div>'
+      + '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">'
+      + '<div class="tx-history-total">' + t.totalVant.toLocaleString('fr-HT') + ' HTG</div>'
+      + '<div style="display:flex;gap:6px;">'
+      + '<button onclick="reprintResi(' + t.id + ')" style="padding:5px 10px;border:none;border-radius:8px;background:rgba(245,197,66,.15);color:#f5c542;font-family:\'Outfit\',sans-serif;font-size:.72rem;font-weight:700;cursor:pointer;">🖨 Resi</button>'
+      + '<button onclick="shareResiWA(' + t.id + ')" style="padding:5px 10px;border:none;border-radius:8px;background:rgba(37,211,102,.1);color:#25d366;font-family:\'Outfit\',sans-serif;font-size:.72rem;font-weight:700;cursor:pointer;">📤 WA</button>'
+      + '</div>'
+      + '</div>'
+      + '</div>'
+      + '</div>';
+  }).join('');
+}
+
+
 
 function renderCashierSummary() {
   const el = document.getElementById('cashier-summary-list');
@@ -7266,7 +7341,8 @@ function switchPage(id, btn) {
   }
   
   if (id === 'home') renderHomePage();
-  if (id === 'rapò')   { rapòDate = new Date(); rapòDate.setHours(0,0,0,0); renderRapò(); }
+  if (id === 'rapò')   { rapòDate = new Date(); rapòDate.setHours(0,0,0,0); renderRapò(); renderRapòHistory(); }
+
   if (id === 'depans') renderDepansPage();
   if (id === 'det')    renderDetPage();
   if (id === 'commandes') { initOrdersPage(); renderOrders(); }
