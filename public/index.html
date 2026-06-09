@@ -1425,8 +1425,8 @@ body {
 
 /* Toast */
 .toast {
-  position: fixed; top: 72px; left: 50%;
-  transform: translateX(-50%) translateY(-120px);
+  position: fixed; top: calc(72px + env(safe-area-inset-top, 0px)); left: 50%;
+  transform: translateX(-50%) translateY(-200px);
   background: var(--green); color: #000;
   padding: 12px 20px; border-radius: 30px;
   font-weight: 700; font-size: 0.85rem;
@@ -3911,7 +3911,7 @@ function showPemanPicker() {
     var p = products.find(function(p){ return p.id == k; });
     return s + (p ? p.price * cart[k] : 0);
   }, 0);
-  var totalStr = total.toLocaleString('fr-HT');
+  var totalStr = total.toLocaleString(['fr-HT', 'fr']);
 
   // Remove existing picker if any
   var old = document.getElementById('peman-picker-overlay');
@@ -3996,7 +3996,7 @@ function doQuickSale(method) {
   var tx = {
     id: Date.now(),
     date: dateKey(new Date()),
-    time: new Date().toLocaleTimeString('fr-HT', {hour:'2-digit', minute:'2-digit'}),
+    time: new Date().toLocaleTimeString(['fr-HT', 'fr'], {hour:'2-digit', minute:'2-digit'}),
     channel: 'boutique', deviceId: deviceId,
     cashierId: cashierSession.id || null,
     cashier: cashierSession.name || 'Admin',
@@ -4038,7 +4038,7 @@ function doQuickSale(method) {
   showResi(tx);
 
   // Success toast after receipt opens
-  _qToast('✅ Vant sove! ' + items.length + ' atik — ' + totalVant.toLocaleString('fr-HT') + ' HTG [' + method + ']');
+  _qToast('✅ Vant sove! ' + items.length + ' atik — ' + totalVant.toLocaleString(['fr-HT', 'fr']) + ' HTG [' + method + ']');
 
   // Refresh admin data silently
   try { renderAdminPage(); } catch(e){}
@@ -4084,7 +4084,7 @@ function dateKey(d) {
 }
 
 function formatDate(d) {
-  return d.toLocaleDateString('fr-HT', {weekday:'short', day:'2-digit', month:'short', year:'numeric'});
+  return d.toLocaleDateString(['fr-HT', 'fr'], {weekday:'short', day:'2-digit', month:'short', year:'numeric'});
 }
 
 // ── INIT ───────────────────────────────────────────────────────────────────
@@ -4110,8 +4110,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   const now = new Date();
   document.getElementById('top-date').innerHTML =
-    now.toLocaleDateString('fr-HT',{weekday:'long',day:'2-digit',month:'long'}) +
-    '<br>' + now.toLocaleTimeString('fr-HT',{hour:'2-digit',minute:'2-digit'});
+    now.toLocaleDateString(['fr-HT', 'fr'],{weekday:'long',day:'2-digit',month:'long'}) +
+    '<br>' + now.toLocaleTimeString(['fr-HT', 'fr'],{hour:'2-digit',minute:'2-digit'});
 
   renderCategories();
   renderProducts();
@@ -4272,7 +4272,7 @@ function renderProducts() {
       ${qty > 0 ? `<div class="add-badge" style="display:flex">${qty}</div>` : ''}
       ${p.image ? `<img src="${p.image}" class="prod-img" style="width:40px; height:40px; border-radius:50%; object-fit:cover; margin-bottom:8px;">` : `<div style="width:40px; height:40px; border-radius:50%; background:var(--s3); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:1.2rem; font-weight:800; color:var(--gold); margin-bottom:8px; text-transform:uppercase;">${p.name.charAt(0)}</div>`}
       <div class="prod-name">${p.name}</div>
-      <div class="prod-price">${p.price.toLocaleString('fr-HT')} HTG</div>
+      <div class="prod-price">${p.price.toLocaleString(['fr-HT', 'fr'])} HTG</div>
       ${p.isDigital ? `<div style="font-size:0.62rem; color:#a78bfa; font-weight:800; background:rgba(167,139,250,0.12); border:1px solid rgba(167,139,250,0.2); border-radius:4px; padding:2px 6px; display:inline-block; margin-top:4px;">🌐 DIJITAL / KOU</div>` : `<div class="prod-cat-tag">${p.cat}</div>`}
       ${stockHtml}
     </div>`;
@@ -4304,7 +4304,7 @@ function updateCartBar() {
     const p = products.find(p => p.id == k);
     return s + (p ? p.price * cart[k] : 0);
   }, 0);
-  const htgStr = totalHTG.toLocaleString('fr-HT') + ' HTG';
+  const htgStr = totalHTG.toLocaleString(['fr-HT', 'fr']) + ' HTG';
 
   // Original floating bar
   document.getElementById('cart-count').textContent = totalQty;
@@ -4387,14 +4387,14 @@ function renderModalCart() {
       <div class="ci-emoji">${p.image ? `<img src="${p.image}" style="width:32px; height:32px; border-radius:50%; object-fit:cover;">` : `<div style="width:32px; height:32px; border-radius:50%; background:var(--s3); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:0.9rem; font-weight:800; color:var(--gold); text-transform:uppercase;">${p.name.charAt(0)}</div>`}</div>
       <div class="ci-info">
         <div class="ci-name">${p.name}</div>
-        <div class="ci-price">${p.price.toLocaleString('fr-HT')} HTG × ${qty}</div>
+        <div class="ci-price">${p.price.toLocaleString(['fr-HT', 'fr'])} HTG × ${qty}</div>
       </div>
       <div class="ci-qty">
         <button class="qty-btn" onclick="changeQty(${p.id},-1)">−</button>
         <div class="qty-num">${qty}</div>
         <button class="qty-btn" onclick="changeQty(${p.id},1)">+</button>
       </div>
-      <div class="ci-total">${(p.price*qty).toLocaleString('fr-HT')}</div>
+      <div class="ci-total">${(p.price*qty).toLocaleString(['fr-HT', 'fr'])}</div>
     </div>`;
   }).join('');
 }
@@ -4469,15 +4469,15 @@ function renderModalSummary() {
   document.getElementById('modal-summary').innerHTML = `
     <div class="sum-row">
       <div class="sum-label">Vant Total</div>
-      <div class="sum-val" style="color:var(--gold)">${totalVant.toLocaleString('fr-HT')} HTG</div>
+      <div class="sum-val" style="color:var(--gold)">${totalVant.toLocaleString(['fr-HT', 'fr'])} HTG</div>
     </div>
     ${totalDep > 0 ? `<div class="sum-row">
       <div class="sum-label">Depans</div>
-      <div class="sum-val" style="color:var(--red)">- ${totalDep.toLocaleString('fr-HT')} HTG</div>
+      <div class="sum-val" style="color:var(--red)">- ${totalDep.toLocaleString(['fr-HT', 'fr'])} HTG</div>
     </div>` : ''}
     <div class="sum-row total">
       <div class="sum-label">Pwòfi Net</div>
-      <div class="sum-val">${pwòfi.toLocaleString('fr-HT')} HTG</div>
+      <div class="sum-val">${pwòfi.toLocaleString(['fr-HT', 'fr'])} HTG</div>
     </div>`;
 }
 
@@ -4568,7 +4568,7 @@ if (selectedPeman === 'Kredi') {
   const tx = {
     id: Date.now(),
     date: dateKey(new Date()),
-    time: new Date().toLocaleTimeString('fr-HT',{hour:'2-digit',minute:'2-digit'}),
+    time: new Date().toLocaleTimeString(['fr-HT', 'fr'],{hour:'2-digit',minute:'2-digit'}),
     channel: 'boutique',
     deviceId,
     cashierId: cashierSession.id || null,
@@ -4645,7 +4645,7 @@ if (selectedPeman === 'Kredi') {
   closeCheckout();
 
   // ✅ Toast siksè klè
-  const totalStr = totalVant.toLocaleString('fr-HT');
+  const totalStr = totalVant.toLocaleString(['fr-HT', 'fr']);
   const pemanStr = tx.peman;
   showToast('✅ Vant sove! ' + items.length + ' atik — ' + totalStr + ' HTG [' + pemanStr + ']');
 
@@ -4877,7 +4877,7 @@ function renderRapò() {
             <div class="bar-name">${d.emoji || '📦'} ${name} <span style="color:#555;font-size:.7rem;">×${d.qty}</span></div>
             <div style="display:flex;align-items:center;gap:6px;">
               ${marginPct !== null ? `<span style="font-size:.68rem;color:${marginPct>=20?'#4caf50':marginPct>=0?'#f5c542':'#ff3d57'};font-weight:700;background:${marginPct>=20?'rgba(76,175,80,.12)':marginPct>=0?'rgba(245,197,66,.12)':'rgba(255,61,87,.12)'};padding:1px 6px;border-radius:10px;">${marginPct}% maji</span>` : ''}
-              <div class="bar-amt">${d.total.toLocaleString('fr-HT')} HTG</div>
+              <div class="bar-amt">${d.total.toLocaleString(['fr-HT', 'fr'])} HTG</div>
             </div>
           </div>
           <div class="bar-track"><div class="bar-fill" style="width:${(d.total/maxV*100).toFixed(1)}%"></div></div>
@@ -4922,8 +4922,8 @@ function renderRapò() {
           </div>
         </div>
         <div class="tx-right">
-          <div class="tx-amt">${t.totalVant.toLocaleString('fr-HT')}</div>
-          ${!cashierOnly && (t.pwòfi || t.totalProfitProducts) ? `<div style="font-size:.63rem;color:#4caf50;font-family:'Space Mono',monospace;margin-top:2px;">+${(t.pwòfi || t.totalProfitProducts || 0).toLocaleString('fr-HT')}</div>` : ''}
+          <div class="tx-amt">${t.totalVant.toLocaleString(['fr-HT', 'fr'])}</div>
+          ${!cashierOnly && (t.pwòfi || t.totalProfitProducts) ? `<div style="font-size:.63rem;color:#4caf50;font-family:'Space Mono',monospace;margin-top:2px;">+${(t.pwòfi || t.totalProfitProducts || 0).toLocaleString(['fr-HT', 'fr'])}</div>` : ''}
           <div class="tx-pay ${(t.peman||'').toLowerCase()}">${t.peman}</div>
         </div>
       </div>`).join('');
@@ -4939,13 +4939,13 @@ function renderRapò() {
     : allDep.map(d => `
       <div class="dep-item">
         <div class="dep-name">🧾 ${d.label}${d.cat ? ` <span style="color:var(--gray);font-size:.72rem">· ${d.cat}</span>` : ''}</div>
-        <div class="dep-amt">- ${d.amt.toLocaleString('fr-HT')} HTG</div>
+        <div class="dep-amt">- ${d.amt.toLocaleString(['fr-HT', 'fr'])} HTG</div>
       </div>`).join('');
 }
 
 function fmtK(n) {
   if (Math.abs(n) >= 1000) return (n/1000).toFixed(1) + 'k';
-  return n.toLocaleString('fr-HT');
+  return n.toLocaleString(['fr-HT', 'fr']);
 }
 
 
@@ -5200,7 +5200,7 @@ function renderProdMgmt() {
                 ${p.isDigital ? `<span style="font-size:0.58rem; color:#a78bfa; font-weight:800; background:rgba(167,139,250,0.12); border:1px solid rgba(167,139,250,0.2); border-radius:3px; padding:1px 4px;">🌐 DIJITAL</span>` : ''}
               </div>
               <div class="pm-detail">
-                ${p.price.toLocaleString('fr-HT')} HTG · ${p.cat} · 
+                ${p.price.toLocaleString(['fr-HT', 'fr'])} HTG · ${p.cat} · 
                 <span style="color:${stockColor};font-weight:700">Stock: ${stockText}</span>
               </div>
             </div>
@@ -5237,19 +5237,19 @@ function sendWhatsApp() {
   const topArr = Object.entries(byProd).sort((a,b)=>b[1]-a[1]).slice(0,3);
 
   const dateStr = formatDate(rapòDate);
-  const topStr = topArr.map((p,i)=>`${['🥇','🥈','🥉'][i]} ${p[0]}: ${p[1].toLocaleString('fr-HT')} HTG`).join('%0a') || '(Pa gen done)';
+  const topStr = topArr.map((p,i)=>`${['🥇','🥈','🥉'][i]} ${p[0]}: ${p[1].toLocaleString(['fr-HT', 'fr'])} HTG`).join('%0a') || '(Pa gen done)';
   const cash = dayTx.filter(t=>t.peman==='Cash').reduce((s,t)=>s+t.totalVant,0);
   const mc = dayTx.filter(t=>t.peman==='NatCash').reduce((s,t)=>s+t.totalVant,0);
   const kr = dayTx.filter(t=>t.peman==='Kredi').reduce((s,t)=>s+t.totalVant,0);
 
-  const msg = `📊 *RAPÒ BIZNIS*%0a${dateStr}%0a%0a💰 Vant Total: *${totalVant.toLocaleString('fr-HT')} HTG*%0a📈 Pwofi Pwodwi: *${totalProfitProducts.toLocaleString('fr-HT')} HTG*%0a🧾 Depans: *${totalDep.toLocaleString('fr-HT')} HTG*%0a✅ Pwòfi Net: *${pwòfi.toLocaleString('fr-HT')} HTG*%0a%0a💳 Cash: ${cash.toLocaleString('fr-HT')} HTG%0a💚 NatCash: ${mc.toLocaleString('fr-HT')} HTG%0a📋 Kredi: ${kr.toLocaleString('fr-HT')} HTG%0a%0a🏆 *Top Pwodwi:*%0a${topStr}%0a%0a📦 ${dayTx.length} tranksasyon%0a——%0a_${appBrand.appName || 'ClairMarché'}_`;
+  const msg = `📊 *RAPÒ BIZNIS*%0a${dateStr}%0a%0a💰 Vant Total: *${totalVant.toLocaleString(['fr-HT', 'fr'])} HTG*%0a📈 Pwofi Pwodwi: *${totalProfitProducts.toLocaleString(['fr-HT', 'fr'])} HTG*%0a🧾 Depans: *${totalDep.toLocaleString(['fr-HT', 'fr'])} HTG*%0a✅ Pwòfi Net: *${pwòfi.toLocaleString(['fr-HT', 'fr'])} HTG*%0a%0a💳 Cash: ${cash.toLocaleString(['fr-HT', 'fr'])} HTG%0a💚 NatCash: ${mc.toLocaleString(['fr-HT', 'fr'])} HTG%0a📋 Kredi: ${kr.toLocaleString(['fr-HT', 'fr'])} HTG%0a%0a🏆 *Top Pwodwi:*%0a${topStr}%0a%0a📦 ${dayTx.length} tranksasyon%0a——%0a_${appBrand.appName || 'ClairMarché'}_`;
 
   window.open(`https://wa.me/?text=${msg}`, '_blank');
 }
 
 function sendMonthWhatsApp() {
   const mwa = new Date();
-  const mwaLabel = mwa.toLocaleDateString('fr-HT',{month:'long',year:'numeric'});
+  const mwaLabel = mwa.toLocaleDateString(['fr-HT', 'fr'],{month:'long',year:'numeric'});
 
   const monthTx = transactions.filter(t => {
     const d = new Date(t.date);
@@ -5276,9 +5276,9 @@ function sendMonthWhatsApp() {
   }));
 
   const topArr = Object.entries(byProd).sort((a,b)=>b[1]-a[1]).slice(0,5);
-  const topStr = topArr.map((p,i)=>`${i+1}. ${p[0]}: ${p[1].toLocaleString('fr-HT')} HTG`).join('%0a') || '(Pa gen done)';
+  const topStr = topArr.map((p,i)=>`${i+1}. ${p[0]}: ${p[1].toLocaleString(['fr-HT', 'fr'])} HTG`).join('%0a') || '(Pa gen done)';
 
-  const msg = `📆 *RAPÒ MWA — ${shopInfo.name || 'Ma Boutique'}*%0a${mwaLabel}%0a%0a💰 Vant Mwa: *${totalVant.toLocaleString('fr-HT')} HTG*%0a📈 Pwofi Pwodwi: *${totalProfitProducts.toLocaleString('fr-HT')} HTG*%0a🧾 Depans: *${totalDep.toLocaleString('fr-HT')} HTG*%0a✅ Pwòfi Net: *${pwòfi.toLocaleString('fr-HT')} HTG*%0a%0a📦 Tranksasyon: ${monthTx.length}%0a%0a🏆 *Top Pwodwi:*%0a${topStr}%0a%0a——%0a_${appBrand.appName || 'BoutiqueRapò'} v${appVersion}_`;
+  const msg = `📆 *RAPÒ MWA — ${shopInfo.name || 'Ma Boutique'}*%0a${mwaLabel}%0a%0a💰 Vant Mwa: *${totalVant.toLocaleString(['fr-HT', 'fr'])} HTG*%0a📈 Pwofi Pwodwi: *${totalProfitProducts.toLocaleString(['fr-HT', 'fr'])} HTG*%0a🧾 Depans: *${totalDep.toLocaleString(['fr-HT', 'fr'])} HTG*%0a✅ Pwòfi Net: *${pwòfi.toLocaleString(['fr-HT', 'fr'])} HTG*%0a%0a📦 Tranksasyon: ${monthTx.length}%0a%0a🏆 *Top Pwodwi:*%0a${topStr}%0a%0a——%0a_${appBrand.appName || 'BoutiqueRapò'} v${appVersion}_`;
 
   window.open(`https://wa.me/?text=${msg}`, '_blank');
 }
@@ -5294,7 +5294,7 @@ function addDepansPage() {
   standaloneDepans.push({
     id: Date.now(),
     date: dateKey(new Date()),
-    time: new Date().toLocaleTimeString('fr-HT',{hour:'2-digit',minute:'2-digit'}),
+    time: new Date().toLocaleTimeString(['fr-HT', 'fr'],{hour:'2-digit',minute:'2-digit'}),
     label, amt, cat
   });
   saveData();
@@ -5317,7 +5317,7 @@ function renderDepansPage() {
   const todayDeps = standaloneDepans.filter(d => d.date === todayKey);
   const total = todayDeps.reduce((s,d) => s+d.amt, 0);
 
-  document.getElementById('dep-total-val').textContent = total.toLocaleString('fr-HT') + ' HTG';
+  document.getElementById('dep-total-val').textContent = total.toLocaleString(['fr-HT', 'fr']) + ' HTG';
   document.getElementById('dep-total-count').textContent = todayDeps.length;
   document.getElementById('dep-page-count').textContent = todayDeps.length + ' antre';
 
@@ -5330,7 +5330,7 @@ function renderDepansPage() {
           <div class="dep-page-name">${d.label}</div>
           <div class="dep-page-time">${d.time} · ${d.cat}</div>
         </div>
-        <div class="dep-page-amt">- ${d.amt.toLocaleString('fr-HT')}</div>
+        <div class="dep-page-amt">- ${d.amt.toLocaleString(['fr-HT', 'fr'])}</div>
         <button class="dep-del-btn" onclick="deleteDepans(${d.id})">✕</button>
       </div>`).join('');
 }
@@ -5629,7 +5629,7 @@ function productOptions(selectedId) {
   const shop = getSelectedOrderShop();
   const list = (shop && shop.products && shop.products.length > 0) ? shop.products : products;
   return list.map(p => {
-    return `<option value="${p.id}" ${p.id === selectedId ? 'selected' : ''}>${p.name} - ${p.price.toLocaleString('fr-HT')} HTG</option>`;
+    return `<option value="${p.id}" ${p.id === selectedId ? 'selected' : ''}>${p.name} - ${p.price.toLocaleString(['fr-HT', 'fr'])} HTG</option>`;
   }).join('');
 }
 
@@ -5659,7 +5659,7 @@ function onOrderShopChange() {
     selects.forEach(select => {
       const currentVal = parseInt(select.value, 10);
       select.innerHTML = list.map(p => {
-        return `<option value="${p.id}">${p.name} - ${p.price.toLocaleString('fr-HT')} HTG</option>`;
+        return `<option value="${p.id}">${p.name} - ${p.price.toLocaleString(['fr-HT', 'fr'])} HTG</option>`;
       }).join('');
       // Si pwodwi a prezan nan nouvo boutik la, kenbe valè a, sinon chwazi premye a
       if (list.some(p => p.id === currentVal)) {
@@ -5737,7 +5737,7 @@ async function createOnlineOrder() {
 
   const order = {
     id: Date.now(), date: dateKey(new Date()),
-    time: new Date().toLocaleTimeString('fr-HT',{hour:'2-digit',minute:'2-digit'}),
+    time: new Date().toLocaleTimeString(['fr-HT', 'fr'],{hour:'2-digit',minute:'2-digit'}),
     shopId: shop.id,
     shopDeviceId: shop.deviceId || '',
     shopName: shop.name,
@@ -5904,10 +5904,10 @@ function renderOrderSummary() {
   const shop = getSelectedOrderShop();
   el.innerHTML = `
     <div class="line"><span>Boutik</span><strong>${shop ? shop.name : 'Chwazi boutik'}</strong></div>
-    <div class="line"><span>Atik</span><strong>${subtotal.toLocaleString('fr-HT')} HTG</strong></div>
-    <div class="line"><span>Livrezon (${distance || 0})</span><strong>${delivery.toLocaleString('fr-HT')} HTG</strong></div>
-    <div class="line"><span>Peye davans</span><strong>${paidAmount.toLocaleString('fr-HT')} HTG (${paidPercent}%)</strong></div>
-    <div class="line total"><span>Total commande</span><span>${total.toLocaleString('fr-HT')} HTG</span></div>`;
+    <div class="line"><span>Atik</span><strong>${subtotal.toLocaleString(['fr-HT', 'fr'])} HTG</strong></div>
+    <div class="line"><span>Livrezon (${distance || 0})</span><strong>${delivery.toLocaleString(['fr-HT', 'fr'])} HTG</strong></div>
+    <div class="line"><span>Peye davans</span><strong>${paidAmount.toLocaleString(['fr-HT', 'fr'])} HTG (${paidPercent}%)</strong></div>
+    <div class="line total"><span>Total commande</span><span>${total.toLocaleString(['fr-HT', 'fr'])} HTG</span></div>`;
 }
 
 function fileToDataUrl(file) {
@@ -5964,7 +5964,7 @@ async function createOnlineOrder() {
   const paymentProofDataUrl = await fileToDataUrl(proofFile);
   const order = {
     id: Date.now(), date: dateKey(new Date()),
-    time: new Date().toLocaleTimeString('fr-HT',{hour:'2-digit',minute:'2-digit'}),
+    time: new Date().toLocaleTimeString(['fr-HT', 'fr'],{hour:'2-digit',minute:'2-digit'}),
     shopId: shop.id,
     shopDeviceId: shop.deviceId || '',
     shopName: shop.name,
@@ -6053,7 +6053,7 @@ function setOrderStatus(id, status) {
     });
     const deliveredTx = {
       id: Date.now(), date: dateKey(new Date()),
-      time: new Date().toLocaleTimeString('fr-HT',{hour:'2-digit',minute:'2-digit'}),
+      time: new Date().toLocaleTimeString(['fr-HT', 'fr'],{hour:'2-digit',minute:'2-digit'}),
       channel: 'online', orderId: order.id, customer: order.client,
       shopId: order.shopId || null, shopName: order.shopName || '',
       deviceId: order.deviceId || deviceId, cashierId: order.cashierId || null, cashier: order.cashier, shift: order.shift,
@@ -6110,8 +6110,8 @@ function setOrderStatus(id, status) {
 function sendOrderWhatsApp(id) {
   const o = onlineOrders.find(x => x.id === id);
   if (!o) return;
-  const lines = o.items.map(i => `${i.emoji} ${i.name} x${i.qty}: ${i.total.toLocaleString('fr-HT')} HTG`).join('%0a');
-  const msg = `🛵 *COMMANDE ${o.shopName || shopInfo.name || 'Ma Boutique'}*%0aBoutik: ${o.shopName || 'N/A'}${o.shopAddress ? '%0aAdrès boutik: '+o.shopAddress : ''}%0aKliyan: ${o.client}%0aAdrès livrezon: ${o.address}%0a%0a${lines}%0a%0aLivrezon: ${o.deliveryFee.toLocaleString('fr-HT')} HTG%0aPeye: ${(o.paidAmount || 0).toLocaleString('fr-HT')} HTG (${o.paidPercent || 0}%)%0aTOTAL: *${o.total.toLocaleString('fr-HT')} HTG*%0aStatus: ${orderStatusLabel(o.status)}`;
+  const lines = o.items.map(i => `${i.emoji} ${i.name} x${i.qty}: ${i.total.toLocaleString(['fr-HT', 'fr'])} HTG`).join('%0a');
+  const msg = `🛵 *COMMANDE ${o.shopName || shopInfo.name || 'Ma Boutique'}*%0aBoutik: ${o.shopName || 'N/A'}${o.shopAddress ? '%0aAdrès boutik: '+o.shopAddress : ''}%0aKliyan: ${o.client}%0aAdrès livrezon: ${o.address}%0a%0a${lines}%0a%0aLivrezon: ${o.deliveryFee.toLocaleString(['fr-HT', 'fr'])} HTG%0aPeye: ${(o.paidAmount || 0).toLocaleString(['fr-HT', 'fr'])} HTG (${o.paidPercent || 0}%)%0aTOTAL: *${o.total.toLocaleString(['fr-HT', 'fr'])} HTG*%0aStatus: ${orderStatusLabel(o.status)}`;
   window.open(`https://wa.me/${o.phone.replace(/\D/g,'')}?text=${msg}`, '_blank');
 }
 
@@ -6145,9 +6145,9 @@ function renderOrders() {
         <div class="order-top">
           <div>
             <div class="order-client">${o.client} <span class="status-pill ${o.status}">${orderStatusLabel(o.status)}</span></div>
-            <div class="order-meta">Boutik: ${o.shopName || 'N/A'}<br>${o.time} · ${o.phone}<br>${o.address} · Distans: ${o.distance || 0}<br>Peye: ${(o.paidAmount || 0).toLocaleString('fr-HT')} HTG (${o.paidPercent || 0}%) · ${o.payment || 'N/A'}<br>${o.items.map(i=>i.name+' x'+i.qty).join(', ')}${o.paymentProofDataUrl ? '<br><a href="'+o.paymentProofDataUrl+'" target="_blank" style="color:var(--gold);font-weight:800;">Gade screenshot peman</a><br><img class="payment-proof-thumb" src="'+o.paymentProofDataUrl+'" alt="Screenshot peman">' : ''}</div>
+            <div class="order-meta">Boutik: ${o.shopName || 'N/A'}<br>${o.time} · ${o.phone}<br>${o.address} · Distans: ${o.distance || 0}<br>Peye: ${(o.paidAmount || 0).toLocaleString(['fr-HT', 'fr'])} HTG (${o.paidPercent || 0}%) · ${o.payment || 'N/A'}<br>${o.items.map(i=>i.name+' x'+i.qty).join(', ')}${o.paymentProofDataUrl ? '<br><a href="'+o.paymentProofDataUrl+'" target="_blank" style="color:var(--gold);font-weight:800;">Gade screenshot peman</a><br><img class="payment-proof-thumb" src="'+o.paymentProofDataUrl+'" alt="Screenshot peman">' : ''}</div>
           </div>
-          <div class="order-total">${o.total.toLocaleString('fr-HT')} HTG</div>
+          <div class="order-total">${o.total.toLocaleString(['fr-HT', 'fr'])} HTG</div>
         </div>
         <div class="order-actions">
           ${orderActionButtons(o)}
@@ -6167,8 +6167,8 @@ function renderAdminPage() {
   const maxDevices = getPlanMaxDevices();
   const kpis = document.getElementById('admin-kpis');
   if (kpis) kpis.innerHTML = `
-    <div class="admin-kpi"><div class="label">Vant jodi a</div><div class="val">${totalSales.toLocaleString('fr-HT')}</div></div>
-    <div class="admin-kpi"><div class="label">Commandes online</div><div class="val">${onlineTotal.toLocaleString('fr-HT')}</div></div>
+    <div class="admin-kpi"><div class="label">Vant jodi a</div><div class="val">${totalSales.toLocaleString(['fr-HT', 'fr'])}</div></div>
+    <div class="admin-kpi"><div class="label">Commandes online</div><div class="val">${onlineTotal.toLocaleString(['fr-HT', 'fr'])}</div></div>
     <div class="admin-kpi"><div class="label">Aparèy lisans</div><div class="val">${activeDevices}/${maxDevices}</div></div>
     <div class="admin-kpi"><div class="label">Caissier</div><div class="val">${cashierSession.name || 'Admin'}</div></div>`;
   renderSalesHistory();
@@ -6204,7 +6204,7 @@ function renderSalesHistory() {
             <div class="tx-history-meta">${t.date} ${t.time} · ${t.peman}<br>Caissier: ${t.cashier || 'Admin'}${t.krediClientName ? ' · Kliyan: <b>'+t.krediClientName+'</b>' : ''}<br>${t.items.map(i => i.name + ' x' + i.qty).join(', ')}</div>
           </div>
           <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
-            <div class="tx-history-total">${t.totalVant.toLocaleString('fr-HT')} HTG</div>
+            <div class="tx-history-total">${t.totalVant.toLocaleString(['fr-HT', 'fr'])} HTG</div>
             <div style="display:flex;gap:6px;">
               <button onclick="reprintResi(${t.id})" style="padding:5px 10px;border:none;border-radius:8px;background:rgba(245,197,66,.15);color:#f5c542;font-family:'Outfit',sans-serif;font-size:.72rem;font-weight:700;cursor:pointer;">🖨 Resi</button>
               <button onclick="shareResiWA(${t.id})" style="padding:5px 10px;border:none;border-radius:8px;background:rgba(37,211,102,.1);color:#25d366;font-family:'Outfit',sans-serif;font-size:.72rem;font-weight:700;cursor:pointer;">📤 WA</button>
@@ -6254,7 +6254,7 @@ function renderRapòHistory() {
       + '<br>' + items + '</div>'
       + '</div>'
       + '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">'
-      + '<div class="tx-history-total">' + t.totalVant.toLocaleString('fr-HT') + ' HTG</div>'
+      + '<div class="tx-history-total">' + t.totalVant.toLocaleString(['fr-HT', 'fr']) + ' HTG</div>'
       + '<div style="display:flex;gap:6px;">'
       + '<button onclick="reprintResi(' + t.id + ')" style="padding:5px 10px;border:none;border-radius:8px;background:rgba(245,197,66,.15);color:#f5c542;font-family:\'Outfit\',sans-serif;font-size:.72rem;font-weight:700;cursor:pointer;">🖨 Resi</button>'
       + '<button onclick="shareResiWA(' + t.id + ')" style="padding:5px 10px;border:none;border-radius:8px;background:rgba(37,211,102,.1);color:#25d366;font-family:\'Outfit\',sans-serif;font-size:.72rem;font-weight:700;cursor:pointer;">📤 WA</button>'
@@ -6283,7 +6283,7 @@ function renderCashierSummary() {
     rows.map(([name,d]) => `<div class="cashier-card">
       <div class="tx-history-top">
         <div><div class="tx-history-title">${name}</div><div class="tx-history-meta">${d.count} vant · ${d.online} online</div></div>
-        <div class="tx-history-total">${d.total.toLocaleString('fr-HT')} HTG</div>
+        <div class="tx-history-total">${d.total.toLocaleString(['fr-HT', 'fr'])} HTG</div>
       </div>
     </div>`).join('');
 }
@@ -6670,7 +6670,7 @@ function renderCostPriceList() {
     return `<div class="param-row">
       <div class="param-row-info">
         <div class="param-row-label">${p.image ? `<img src="${p.image}" style="width:20px; height:20px; border-radius:50%; object-fit:cover; vertical-align:middle; margin-right:4px;">` : `<span style="width:20px; height:20px; border-radius:50%; background:var(--s3); border:1px solid var(--border); display:inline-flex; align-items:center; justify-content:center; font-size:0.68rem; font-weight:800; color:var(--gold); text-transform:uppercase; vertical-align:middle; margin-right:4px;">${p.name.charAt(0)}</span>`}${p.name}</div>
-        <div class="param-row-sub">Vant: ${p.price.toLocaleString('fr-HT')} HTG${maji!==null?' · Maji: '+maji+'%':' · Antre pri achte a'}</div>
+        <div class="param-row-sub">Vant: ${p.price.toLocaleString(['fr-HT', 'fr'])} HTG${maji!==null?' · Maji: '+maji+'%':' · Antre pri achte a'}</div>
       </div>
       <input type="number" value="${cost||''}" placeholder="HTG"
         style="width:90px;background:var(--s3);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--gold);font-family:'Space Mono',monospace;font-size:.8rem;outline:none;text-align:center;"
@@ -6701,14 +6701,14 @@ function showResi(tx) {
 
   lastTx = tx;
   const resiNum = 'BR-' + String(tx.id).slice(-6);
-  const dateStr = new Date().toLocaleDateString('fr-HT', {day:'2-digit',month:'2-digit',year:'numeric'});
+  const dateStr = new Date().toLocaleDateString(['fr-HT', 'fr'], {day:'2-digit',month:'2-digit',year:'numeric'});
   const timeStr = tx.time;
 
   const itemsHtml = tx.items.map(i => `
     <div class="resi-item">
       <div class="iname">${i.emoji || '📦'} ${i.name || ''}</div>
       <div class="iqty">×${i.qty}</div>
-      <div class="itot">${(i.total||0).toLocaleString('fr-HT')}</div>
+      <div class="itot">${(i.total||0).toLocaleString(['fr-HT', 'fr'])}</div>
     </div>`).join('');
 
   document.getElementById('resi-sheet').innerHTML = `
@@ -6728,7 +6728,7 @@ function showResi(tx) {
 
       <div class="resi-row">
         <span class="label">Sous-total</span>
-        <span class="val">${tx.totalVant.toLocaleString('fr-HT')} HTG</span>
+        <span class="val">${tx.totalVant.toLocaleString(['fr-HT', 'fr'])} HTG</span>
       </div>
       <div class="resi-row">
         <span class="label">Peman</span>
@@ -6737,7 +6737,7 @@ function showResi(tx) {
 
       <div class="resi-total-box">
         <span class="resi-total-label">TOTAL</span>
-        <span class="resi-total-val">${tx.totalVant.toLocaleString('fr-HT')} HTG</span>
+        <span class="resi-total-val">${tx.totalVant.toLocaleString(['fr-HT', 'fr'])} HTG</span>
       </div>
 
       <div class="resi-merci">${shopMsg}</div>
@@ -6759,7 +6759,7 @@ function closeResi() {
 function resiWhatsApp() {
   if (!lastTx) return;
   const resiNum = 'BR-' + String(lastTx.id).slice(-6);
-  const lines = lastTx.items.map(i=>`  ${i.emoji || '🌐'} ${i.name} ×${i.qty}: ${i.total.toLocaleString('fr-HT')} HTG`).join('%0a');
+  const lines = lastTx.items.map(i=>`  ${i.emoji || '🌐'} ${i.name} ×${i.qty}: ${i.total.toLocaleString(['fr-HT', 'fr'])} HTG`).join('%0a');
   
   // Detekte atik dijital yo pou yo ka ajoute nan mesaj la
   const digitalItems = lastTx.items.filter(i => i.isDigital);
@@ -6771,7 +6771,7 @@ function resiWhatsApp() {
     });
   }
 
-  const msg = `🧾 *RESI ${shopInfo.name||'Ma Boutique'}*%0a#${resiNum}%0a——%0a${lines}%0a——%0a💰 *TOTAL: ${lastTx.totalVant.toLocaleString('fr-HT')} HTG*%0a💳 ${lastTx.peman}%0a%0a${shopInfo.tel?'📞 '+shopInfo.tel+'%0a':''}${shopInfo.msg||'Mèsi pou konfyans ou!'}${digitalSection}`;
+  const msg = `🧾 *RESI ${shopInfo.name||'Ma Boutique'}*%0a#${resiNum}%0a——%0a${lines}%0a——%0a💰 *TOTAL: ${lastTx.totalVant.toLocaleString(['fr-HT', 'fr'])} HTG*%0a💳 ${lastTx.peman}%0a%0a${shopInfo.tel?'📞 '+shopInfo.tel+'%0a':''}${shopInfo.msg||'Mèsi pou konfyans ou!'}${digitalSection}`;
   window.open(`https://wa.me/?text=${msg}`, '_blank');
 }
 
@@ -6939,15 +6939,15 @@ function printRapò() {
   <h1>${shopInfo.name||'Ma Boutique'} — Rapò Jounen</h1>
   <div class="sub">${formatDate(rapòDate)}</div>
   <div class="kpi-grid">
-    <div class="kpi"><div class="label">Vant Total</div><div class="val">${totalVant.toLocaleString('fr-HT')} HTG</div></div>
-    <div class="kpi"><div class="label">Pwòfi Net</div><div class="val ${pwòfi>=0?'g':'r'}">${pwòfi.toLocaleString('fr-HT')} HTG</div></div>
-    <div class="kpi"><div class="label">Depans</div><div class="val r">${totalDep.toLocaleString('fr-HT')} HTG</div></div>
+    <div class="kpi"><div class="label">Vant Total</div><div class="val">${totalVant.toLocaleString(['fr-HT', 'fr'])} HTG</div></div>
+    <div class="kpi"><div class="label">Pwòfi Net</div><div class="val ${pwòfi>=0?'g':'r'}">${pwòfi.toLocaleString(['fr-HT', 'fr'])} HTG</div></div>
+    <div class="kpi"><div class="label">Depans</div><div class="val r">${totalDep.toLocaleString(['fr-HT', 'fr'])} HTG</div></div>
     <div class="kpi"><div class="label">Tranksasyon</div><div class="val b">${dayTx.length}</div></div>
   </div>
   <table><thead><tr><th>Pwodwi</th><th>Qté</th><th>Total</th></tr></thead><tbody>
-    ${topArr.map(([n,d])=>`<tr><td>${d.emoji} ${n}</td><td>${d.qty}</td><td>${d.total.toLocaleString('fr-HT')} HTG</td></tr>`).join('')}
+    ${topArr.map(([n,d])=>`<tr><td>${d.emoji} ${n}</td><td>${d.qty}</td><td>${d.total.toLocaleString(['fr-HT', 'fr'])} HTG</td></tr>`).join('')}
   </tbody></table>
-  <div class="footer">Enprime pa ${appBrand.appName || 'ClairMarché'} · ${new Date().toLocaleString('fr-HT')}</div>
+  <div class="footer">Enprime pa ${appBrand.appName || 'ClairMarché'} · ${new Date().toLocaleString(['fr-HT', 'fr'])}</div>
   </body></html>`);
   w.document.close();
   setTimeout(()=>{w.print();}, 500);
@@ -6973,7 +6973,7 @@ function printRapòMwa() {
   const totalProfitProducts = dayTxMwa.reduce((s,t)=>s+(t.totalProfitProducts || 0),0);
   const baseProfit = totalProfitProducts > 0 ? totalProfitProducts : totalVant;
   const pwòfi = baseProfit - totalDep;
-  const mwaLabel = mwa.toLocaleDateString('fr-HT',{month:'long',year:'numeric'});
+  const mwaLabel = mwa.toLocaleDateString(['fr-HT', 'fr'],{month:'long',year:'numeric'});
 
   const byProd = {};
   dayTxMwa.forEach(t=>t.items.forEach(i=>{
@@ -7001,17 +7001,17 @@ function printRapòMwa() {
     @media print{body{padding:0}}
   </style></head><body>
   <h1>${shopInfo.name||'Ma Boutique'} — Rapò ${mwaLabel}</h1>
-  <div class="sub">${dayTxMwa.length} tranksasyon · ${new Date().toLocaleDateString('fr-HT')}</div>
+  <div class="sub">${dayTxMwa.length} tranksasyon · ${new Date().toLocaleDateString(['fr-HT', 'fr'])}</div>
   <div class="kpi-grid">
-    <div class="kpi"><div class="label">Vant Mwa</div><div class="val">${totalVant.toLocaleString('fr-HT')} HTG</div></div>
-    <div class="kpi"><div class="label">Pwofi Pwodwi</div><div class="val g">${totalProfitProducts.toLocaleString('fr-HT')} HTG</div></div>
-    <div class="kpi"><div class="label">Pwòfi Net</div><div class="val ${pwòfi>=0?'g':'r'}">${pwòfi.toLocaleString('fr-HT')} HTG</div></div>
-    <div class="kpi"><div class="label">Depans</div><div class="val r">${totalDep.toLocaleString('fr-HT')} HTG</div></div>
+    <div class="kpi"><div class="label">Vant Mwa</div><div class="val">${totalVant.toLocaleString(['fr-HT', 'fr'])} HTG</div></div>
+    <div class="kpi"><div class="label">Pwofi Pwodwi</div><div class="val g">${totalProfitProducts.toLocaleString(['fr-HT', 'fr'])} HTG</div></div>
+    <div class="kpi"><div class="label">Pwòfi Net</div><div class="val ${pwòfi>=0?'g':'r'}">${pwòfi.toLocaleString(['fr-HT', 'fr'])} HTG</div></div>
+    <div class="kpi"><div class="label">Depans</div><div class="val r">${totalDep.toLocaleString(['fr-HT', 'fr'])} HTG</div></div>
   </div>
   <table><thead><tr><th>Top Pwodwi</th><th>Qté</th><th>Total</th></tr></thead><tbody>
-    ${topArr.map(([n,d])=>`<tr><td>${d.emoji} ${n}</td><td>${d.qty}</td><td>${d.total.toLocaleString('fr-HT')} HTG</td></tr>`).join('')}
+    ${topArr.map(([n,d])=>`<tr><td>${d.emoji} ${n}</td><td>${d.qty}</td><td>${d.total.toLocaleString(['fr-HT', 'fr'])} HTG</td></tr>`).join('')}
   </tbody></table>
-  <div class="footer">Enprime pa ${appBrand.appName || 'ClairMarché'} · ${new Date().toLocaleString('fr-HT')}</div>
+  <div class="footer">Enprime pa ${appBrand.appName || 'ClairMarché'} · ${new Date().toLocaleString(['fr-HT', 'fr'])}</div>
   </body></html>`);
   w.document.close();
   setTimeout(()=>{w.print();}, 500);
@@ -7106,7 +7106,7 @@ function openPay(id) {
   document.getElementById('pay-modal-title').textContent =
     det.type==='dwe' ? `💰 Peman — ${det.non}` : `💸 Ou ap peye — ${det.non}`;
   document.getElementById('pay-modal-sub').textContent =
-    `Rès dèt: ${det.reste.toLocaleString('fr-HT')} HTG`;
+    `Rès dèt: ${det.reste.toLocaleString(['fr-HT', 'fr'])} HTG`;
   document.getElementById('pay-amount-input').value = det.reste;
   document.getElementById('pay-modal').classList.add('open');
 }
@@ -7126,14 +7126,14 @@ function confirmPay() {
   det.payments.push({
     amt,
     date: dateKey(new Date()),
-    time: new Date().toLocaleTimeString('fr-HT',{hour:'2-digit',minute:'2-digit'})
+    time: new Date().toLocaleTimeString(['fr-HT', 'fr'],{hour:'2-digit',minute:'2-digit'})
   });
   det.reste = Math.max(0, det.reste - amt);
 
   saveData();
   closePay();
   renderDetPage();
-  showToast(det.reste === 0 ? '✅ Dèt peye konplètman!' : `✅ ${amt.toLocaleString('fr-HT')} HTG anrejistre!`);
+  showToast(det.reste === 0 ? '✅ Dèt peye konplètman!' : `✅ ${amt.toLocaleString(['fr-HT', 'fr'])} HTG anrejistre!`);
 }
 
 function shouldAlert(det) {
@@ -7165,12 +7165,12 @@ function checkAndNotify() {
     const nouDwe  = alerts.filter(d => d.type==='nou');
     if (dweMwen.length > 0)
       new Notification('💰 BoutiqueRapò — Dèt pou kolekte', {
-        body: dweMwen.map(d=>`${d.non}: ${d.reste.toLocaleString('fr-HT')} HTG`).join('\n'),
+        body: dweMwen.map(d=>`${d.non}: ${d.reste.toLocaleString(['fr-HT', 'fr'])} HTG`).join('\n'),
         icon: '💰'
       });
     if (nouDwe.length > 0)
       new Notification('💸 BoutiqueRapò — Dèt pou peye', {
-        body: nouDwe.map(d=>`${d.non}: ${d.reste.toLocaleString('fr-HT')} HTG`).join('\n'),
+        body: nouDwe.map(d=>`${d.non}: ${d.reste.toLocaleString(['fr-HT', 'fr'])} HTG`).join('\n'),
         icon: '💸'
       });
   }
@@ -7183,8 +7183,8 @@ function renderDetPage() {
   const totalDwe = dweDets.reduce((s,d) => s+d.reste, 0);
   const totalNou = nouDets.reduce((s,d) => s+d.reste, 0);
 
-  document.getElementById('det-dwe-total').textContent = totalDwe.toLocaleString('fr-HT') + ' HTG';
-  document.getElementById('det-nou-total').textContent = totalNou.toLocaleString('fr-HT') + ' HTG';
+  document.getElementById('det-dwe-total').textContent = totalDwe.toLocaleString(['fr-HT', 'fr']) + ' HTG';
+  document.getElementById('det-nou-total').textContent = totalNou.toLocaleString(['fr-HT', 'fr']) + ' HTG';
 
   // Alèt banner
   const alertDets = dets.filter(d => shouldAlert(d));
@@ -7228,7 +7228,7 @@ function renderDetList(elId, list, color) {
     const pct = Math.round((1 - d.reste/d.amt) * 100);
     const alèt = shouldAlert(d);
     const paid = d.reste <= 0;
-    const dateStr = d.date ? `Limit: ${new Date(d.date+'T00:00:00').toLocaleDateString('fr-HT',{day:'2-digit',month:'short'})}` : '';
+    const dateStr = d.date ? `Limit: ${new Date(d.date+'T00:00:00').toLocaleDateString(['fr-HT', 'fr'],{day:'2-digit',month:'short'})}` : '';
 
     return `<div class="det-card" style="${paid?'opacity:0.5':''}">
       <div class="det-card-top">
@@ -7238,9 +7238,9 @@ function renderDetList(elId, list, color) {
         </div>
         <div>
           <div class="det-card-amt ${color}">
-            ${d.reste.toLocaleString('fr-HT')} HTG
+            ${d.reste.toLocaleString(['fr-HT', 'fr'])} HTG
           </div>
-          ${d.amt !== d.reste ? `<div style="font-size:0.65rem;color:var(--gray);text-align:right">/${d.amt.toLocaleString('fr-HT')}</div>` : ''}
+          ${d.amt !== d.reste ? `<div style="font-size:0.65rem;color:var(--gray);text-align:right">/${d.amt.toLocaleString(['fr-HT', 'fr'])}</div>` : ''}
         </div>
       </div>
 
@@ -7488,7 +7488,7 @@ function closeChatbot() {
 }
 
 function appendBotMsg(text, skipHistory=false) {
-  const now = new Date().toLocaleTimeString('fr-HT',{hour:'2-digit',minute:'2-digit'});
+  const now = new Date().toLocaleTimeString(['fr-HT', 'fr'],{hour:'2-digit',minute:'2-digit'});
   const div = document.createElement('div');
   div.className = 'chat-msg bot';
   // Parse simple markdown: **bold**, \n newlines
@@ -7502,7 +7502,7 @@ function appendBotMsg(text, skipHistory=false) {
 }
 
 function appendUserMsg(text) {
-  const now = new Date().toLocaleTimeString('fr-HT',{hour:'2-digit',minute:'2-digit'});
+  const now = new Date().toLocaleTimeString(['fr-HT', 'fr'],{hour:'2-digit',minute:'2-digit'});
   const div = document.createElement('div');
   div.className = 'chat-msg user';
   div.innerHTML = `<div class="chat-bubble">${text}</div><div class="chat-time">${now}</div>`;
@@ -7570,7 +7570,7 @@ function sendChatMessage(overrideText) {
   // Top products today
   const byProd = {};
   todayTx.forEach(t=>t.items.forEach(i=>{byProd[i.name]=(byProd[i.name]||0)+i.total;}));
-  const topToday = Object.entries(byProd).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([n,v])=>`${n}: ${v.toLocaleString('fr-HT')} HTG`).join(', ') || 'Okenn vant jodi a';
+  const topToday = Object.entries(byProd).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([n,v])=>`${n}: ${v.toLocaleString(['fr-HT', 'fr'])} HTG`).join(', ') || 'Okenn vant jodi a';
 
   const systemPrompt = `Ou se "Asistan ClairMarché", yon asistan IA entèlijan pou yon ti biznis ayisyen.
 Ou pale **Kreyòl ayisyen** sèlman, natirèl ak amical. Ou ba repons ki kout, klè ak itil.
@@ -7578,14 +7578,14 @@ Ou ka itilize bold (**tèks**) ak newlines (\n) pou fòmate repons ou.
 
 DONE BOUTIQUE JOUNEN AN (${todayKey}):
 - Non boutique: ${shopInfo.name || 'Ma Boutique'}
-- Vant jodi: ${totalVantToday.toLocaleString('fr-HT')} HTG (${todayTx.length} tranksasyon)
-- Depans jodi: ${totalDepToday.toLocaleString('fr-HT')} HTG
-- Pwòfi jodi: ${pwòfiToday.toLocaleString('fr-HT')} HTG
+- Vant jodi: ${totalVantToday.toLocaleString(['fr-HT', 'fr'])} HTG (${todayTx.length} tranksasyon)
+- Depans jodi: ${totalDepToday.toLocaleString(['fr-HT', 'fr'])} HTG
+- Pwòfi jodi: ${pwòfiToday.toLocaleString(['fr-HT', 'fr'])} HTG
 - Top pwodwi: ${topToday}
 
 DONE MWA:
-- Vant mwa: ${totalVantMwa.toLocaleString('fr-HT')} HTG (${monthTx.length} tranksasyon)
-- Pwòfi mwa: ${pwòfiMwa.toLocaleString('fr-HT')} HTG
+- Vant mwa: ${totalVantMwa.toLocaleString(['fr-HT', 'fr'])} HTG (${monthTx.length} tranksasyon)
+- Pwòfi mwa: ${pwòfiMwa.toLocaleString(['fr-HT', 'fr'])} HTG
 
 STOCK:
 - ${products.length} pwodwi total
@@ -7593,8 +7593,8 @@ STOCK:
 - Stock fini: ${outStock.map(p=>p.name).join(', ')||'Okenn'}
 
 DÈT:
-- Moun ki dwe ou: ${activeDwe.length} moun, total ${totalDweAmt.toLocaleString('fr-HT')} HTG
-- Ou dwe: ${activeNou.length} moun/enstitisyon, total ${totalNouAmt.toLocaleString('fr-HT')} HTG
+- Moun ki dwe ou: ${activeDwe.length} moun, total ${totalDweAmt.toLocaleString(['fr-HT', 'fr'])} HTG
+- Ou dwe: ${activeNou.length} moun/enstitisyon, total ${totalNouAmt.toLocaleString(['fr-HT', 'fr'])} HTG
 
 KONSÈY: Ba repons ki dirèk, pratik, ak konpreyansib pou yon ti komèsan ayisyen. Limite repons nan 150 mo maksimòm.`;
 
@@ -7640,7 +7640,7 @@ KONSÈY: Ba repons ki dirèk, pratik, ak konpreyansib pou yon ti komèsan ayisye
 
 // ── LOCAL AI FALLBACK (offline) ────────────────────────────────────────────
 function getLocalAIReply(q, d) {
-  const fmt = n => n.toLocaleString('fr-HT') + ' HTG';
+  const fmt = n => n.toLocaleString(['fr-HT', 'fr']) + ' HTG';
   
   // Clean query for matching (flexible keyword arrays)
   const hasKeyword = (keywords) => {
@@ -7770,6 +7770,29 @@ function getPersistentDeviceId() {
 }
 
 let deviceId = getPersistentDeviceId();
+
+async function initPersistentDeviceId() {
+  if (isCapacitor && window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Device) {
+    try {
+      const info = await window.Capacitor.Plugins.Device.getId();
+      if (info && info.identifier) {
+        const raw = info.identifier.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        const clean = raw.slice(-8);
+        deviceId = 'BR-' + clean.slice(0, 4) + '-' + clean.slice(4);
+        localStorage.setItem('br_device_id', deviceId);
+        setCookie('br_device_id', deviceId);
+        console.log('[ClairMarché] Native Device ID loaded:', deviceId);
+        if (typeof refreshDeviceDisplays === 'function') refreshDeviceDisplays();
+      }
+    } catch (e) {
+      console.error('[ClairMarché] Error getting native device ID:', e);
+    }
+  }
+}
+
+if (isCapacitor) {
+  initPersistentDeviceId();
+}
 
 function normalizeDeviceId(id) {
   return String(id || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
@@ -8069,7 +8092,7 @@ function updatePlanPrices() {
   ['solo','team','boutique','business','enterprise'].forEach(plan => {
     const mainEl = document.getElementById('price-' + plan);
     if (!mainEl) return;
-    mainEl.textContent = p[plan].mwa > 0 ? p[plan].mwa.toLocaleString('fr-HT') + ' HTG/mwa' : 'Pri sou demann';
+    mainEl.textContent = p[plan].mwa > 0 ? p[plan].mwa.toLocaleString(['fr-HT', 'fr']) + ' HTG/mwa' : 'Pri sou demann';
   });
 }
 
@@ -8077,7 +8100,7 @@ function updateNatCashAmount() {
   const p = TRIAL_CONFIG.plans[selectedPlanLic];
   const amt = p.mwa;
   const el = document.getElementById('natcash-display-amount');
-  if (el) el.textContent = '💰 ' + (amt > 0 ? amt.toLocaleString('fr-HT') + ' HTG/mwa' : 'Pri sou demann') + ' · ' + (p.label || cap(selectedPlanLic)) + ' · jiska ' + p.maxDevices + ' aparèy';
+  if (el) el.textContent = '💰 ' + (amt > 0 ? amt.toLocaleString(['fr-HT', 'fr']) + ' HTG/mwa' : 'Pri sou demann') + ' · ' + (p.label || cap(selectedPlanLic)) + ' · jiska ' + p.maxDevices + ' aparèy';
   refreshDeviceDisplays();
 
   const numEl = document.getElementById('natcash-display-number');
@@ -8090,7 +8113,7 @@ function updateMonCashAmount() {
   const p = TRIAL_CONFIG.plans[selectedPlanLic];
   const amt = p.mwa;
   const el = document.getElementById('moncash-display-amount');
-  if (el) el.textContent = '💰 ' + (amt > 0 ? amt.toLocaleString('fr-HT') + ' HTG/mwa' : 'Pri sou demann') + ' · ' + (p.label || cap(selectedPlanLic)) + ' · jiska ' + p.maxDevices + ' aparèy';
+  if (el) el.textContent = '💰 ' + (amt > 0 ? amt.toLocaleString(['fr-HT', 'fr']) + ' HTG/mwa' : 'Pri sou demann') + ' · ' + (p.label || cap(selectedPlanLic)) + ' · jiska ' + p.maxDevices + ' aparèy';
   refreshDeviceDisplays();
 
   const numEl = document.getElementById('moncash-display-number');
@@ -8146,7 +8169,7 @@ function confirmPayWhatsApp() {
     '🏪 Boutique: ' + shopName + '\n' +
     '🆔 Kòd aparèy: ' + deviceId + '\n' +
     '📦 Plan: ' + planLabel + '\n' +
-    '💰 Montan: ' + amt.toLocaleString('fr-HT') + ' HTG\n' +
+    '💰 Montan: ' + amt.toLocaleString(['fr-HT', 'fr']) + ' HTG\n' +
     '💳 Metòd: ' + (selectedPayMethodLic === 'natcash' ? 'NatCash' : 'MonCash') + '\n\n' +
     'Screenshot peman mwen voye anlè a.\n' +
     'Mwen ta renmen resevwa kòd aktivasyon mwen.\n\n' +
@@ -8269,11 +8292,11 @@ function updateLicenseBadgeSettings() {
 
   let statusHtml = '';
   if (isActive || isCancelled) {
-    const expStr = 'Ekspire: ' + new Date(licenseState.expiresAt).toLocaleDateString('fr-HT');
+    const expStr = 'Ekspire: ' + new Date(licenseState.expiresAt).toLocaleDateString(['fr-HT', 'fr']);
     const deviceStr = licenseState.deviceId ? ' · Aparèy: ' + licenseState.deviceId : '';
     const maxDeviceStr = ' · Limit: ' + getPlanMaxDevices() + ' aparèy';
     const cancelledStr = isCancelled && licenseState.cancelledAt
-      ? ' · Dezabòne: ' + new Date(licenseState.cancelledAt).toLocaleDateString('fr-HT')
+      ? ' · Dezabòne: ' + new Date(licenseState.cancelledAt).toLocaleDateString(['fr-HT', 'fr'])
       : '';
     statusHtml = `
       <div style="background:${isCancelled?'rgba(255,109,0,0.08)':'rgba(0,230,118,0.08)'};border:1px solid ${isCancelled?'rgba(255,109,0,0.2)':'rgba(0,230,118,0.2)'};border-radius:12px;padding:14px;margin:0 0 10px;">
@@ -8297,7 +8320,7 @@ function updateLicenseBadgeSettings() {
   const installedDate = new Date(licenseState.installedAt || Date.now());
   const elapsedDays = Math.floor((Date.now() - installedDate.getTime()) / 86400000);
   const expiresText = licenseState.expiresAt
-    ? new Date(licenseState.expiresAt).toLocaleDateString('fr-HT')
+    ? new Date(licenseState.expiresAt).toLocaleDateString(['fr-HT', 'fr'])
     : 'Pa aktive';
   const isSubscribed = isActive || isCancelled;
   const licenseDebugHtml = `
@@ -8305,7 +8328,7 @@ function updateLicenseBadgeSettings() {
       <div style="font-size:0.72rem;color:var(--blue);font-weight:800;margin-bottom:8px;">📌 ${isSubscribed ? 'ETA LISANS & APARÈY' : 'ETA ESSAI & APARÈY'}</div>
       <div style="display:grid;gap:6px;font-size:0.72rem;color:var(--gray);line-height:1.35;">
         ${!isSubscribed ? `
-          <div><strong style="color:var(--white);">Enstale depi:</strong> ${installedDate.toLocaleDateString('fr-HT')} (${elapsedDays} jou pase)</div>
+          <div><strong style="color:var(--white);">Enstale depi:</strong> ${installedDate.toLocaleDateString(['fr-HT', 'fr'])} (${elapsedDays} jou pase)</div>
           <div><strong style="color:var(--white);">Jou essai rete:</strong> ${daysLeft} / ${TRIAL_CONFIG.trialDays}</div>
         ` : ''}
         <div><strong style="color:var(--white);">Status:</strong> ${licenseState.status || 'trial'}</div>
@@ -8800,7 +8823,7 @@ async function sendAICoachMessage(courseId, courseName) {
 
 // ── DIPLOMA CERTIFICATE GENERATOR ──────────────────────────────────────────
 function printStudentCertificate(studentName, courseName) {
-  const dateStr = new Date().toLocaleDateString('fr-HT', {day:'2-digit',month:'long',year:'numeric'});
+  const dateStr = new Date().toLocaleDateString(['fr-HT', 'fr'], {day:'2-digit',month:'long',year:'numeric'});
   const certId = 'CERT-' + String(Math.floor(100000 + Math.random() * 900000));
   
   const w = window.open('', '_blank', 'width=900,height=650');
@@ -9066,7 +9089,7 @@ function renderSimScreenInput(shopName, total, paymentType, phone) {
       <div style="color: #94a3b8; font-size: 0.72rem; margin-bottom: 2px;">Voye bay:</div>
       <div style="color: #fff; font-weight: 700; font-size: 0.95rem; margin-bottom: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family:'Outfit',sans-serif;">${shopName}</div>
       <div style="color: #94a3b8; font-size: 0.72rem; margin-bottom: 2px;">Montan pou Peye:</div>
-      <div style="color: ${themeColor}; font-weight: 900; font-size: 1.5rem; font-family:'Outfit',sans-serif;">${total.toLocaleString('fr-HT')} HTG</div>
+      <div style="color: ${themeColor}; font-weight: 900; font-size: 1.5rem; font-family:'Outfit',sans-serif;">${total.toLocaleString(['fr-HT', 'fr'])} HTG</div>
     </div>
 
     <div style="text-align: left;">
@@ -9099,7 +9122,7 @@ function startSimUSSDPrompt(shopName, total, paymentType, phone) {
       <div style="background: #1e293b; border-radius: 16px; padding: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); text-align: left; margin-bottom: 20px;">
         <h4 style="color: ${themeColor}; font-size: 0.8rem; font-weight: 800; margin: 0 0 8px; text-transform: uppercase; letter-spacing: 1px; font-family:'Outfit',sans-serif;">Similasyon USSD Sekirize</h4>
         <p style="color: #cbd5e1; font-size: 0.8rem; line-height: 1.4; margin: 0 0 12px; font-family:'Outfit',sans-serif;">
-          Sistèm ${brandName} mande pou w konfime transfè **${total.toLocaleString('fr-HT')} HTG** bay **${shopName}**.<br>
+          Sistèm ${brandName} mande pou w konfime transfè **${total.toLocaleString(['fr-HT', 'fr'])} HTG** bay **${shopName}**.<br>
           Antre PIN 4 chif sekrè w la:
         </p>
         
@@ -9296,7 +9319,7 @@ function generateSimulatedReceiptCanvas(shopName, amount, paymentType, phone, tx
   ctx.textAlign = 'right';
   ctx.fillText(shopName, 355, 195);
   ctx.fillStyle = paymentType === 'MonCash' ? '#f59e0b' : '#4ade80';
-  ctx.fillText(amount.toLocaleString('fr-HT') + ' HTG', 355, 220);
+  ctx.fillText(amount.toLocaleString(['fr-HT', 'fr']) + ' HTG', 355, 220);
   ctx.fillStyle = '#ffffff';
   ctx.fillText(phone, 355, 245);
 
