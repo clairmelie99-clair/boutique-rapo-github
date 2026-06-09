@@ -4455,8 +4455,9 @@ function renderRapò() {
   const netProfit       = grossProfit - totalDep;
   const nbreTx          = filtTx.length;
 
-  // Total active debts
-  const totalDets = cashierOnly ? 0 : dets.filter(d => d.type === 'dwe').reduce((s,d) => s + (d.amt - (d.paid || 0)), 0);
+  // Total active debts — safe read (dets may be declared later in the script)
+  const _dets = (typeof dets !== 'undefined' ? dets : JSON.parse(localStorage.getItem('br_dets') || '[]'));
+  const totalDets = cashierOnly ? 0 : _dets.filter(d => d.type === 'dwe').reduce((s,d) => s + (d.amt - (d.paid || 0)), 0);
 
   // ── KPI cards (6 cards) ──
   const kpiCards = [
