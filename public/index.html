@@ -7112,8 +7112,43 @@ function showToast(msg) {
 // ── SERVICE WORKER REGISTRATION ─────────────────────────────────────────────
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js', {scope:'./'}).catch(()=>{});
+    navigator.serviceWorker.register('./sw.js', {scope:'./'})
+      .then(reg => {
+        // Check for updates every 60s
+        setInterval(() => reg.update(), 60000);
+      })
+      .catch(() => {});
+
+    // Listen for "new version" message from SW
+    navigator.serviceWorker.addEventListener('message', e => {
+      if (e.data?.type === 'SW_UPDATED') {
+        _showUpdateBanner();
+      }
+    });
   });
+}
+
+function _showUpdateBanner() {
+  if (document.getElementById('sw-update-banner')) return;
+  const banner = document.createElement('div');
+  banner.id = 'sw-update-banner';
+  banner.style.cssText = `
+    position:fixed; top:0; left:0; right:0; z-index:99999;
+    background:linear-gradient(135deg,#4caf50,#2e7d32);
+    color:#fff; padding:12px 16px;
+    display:flex; align-items:center; justify-content:space-between;
+    font-family:'Outfit',sans-serif; font-size:.88rem; font-weight:700;
+    box-shadow:0 4px 20px rgba(76,175,80,.5);
+  `;
+  banner.innerHTML = `
+    <span>✅ Nouvo vèsyon disponib!</span>
+    <button onclick="window.location.reload(true)" style="
+      background:#fff; color:#2e7d32; border:none; border-radius:20px;
+      padding:6px 16px; font-family:'Outfit',sans-serif; font-weight:800;
+      font-size:.82rem; cursor:pointer;
+    ">♻️ Mete ajou</button>
+  `;
+  document.body.prepend(banner);
 }
 
 // ── PWA INSTALL PROMPT ─────────────────────────────────────────────────────

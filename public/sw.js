@@ -1,4 +1,4 @@
-const CACHE_NAME = 'clair-marche-v18';
+const CACHE_NAME = 'clair-marche-v19';
 const ASSETS = [
   './',
   './index.html',
@@ -9,51 +9,59 @@ const ASSETS = [
 
 self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(ASSETS);
-    }).then(() => self.skipWaiting())
+    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
+      .then(() => self.skipWaiting())
   );
 });
 
 self.addEventListener('activate', e => {
   e.waitUntil(
-    caches.keys().then(keys => {
-      return Promise.all(
-        keys.map(key => {
-          if (key !== CACHE_NAME) {
-            return caches.delete(key);
-          }
-        })
-      );
-    }).then(() => self.clients.claim())
+    caches.keys().then(keys =>
+      Promise.all(keys.map(key => key !== CACHE_NAME && caches.delete(key)))
+    ).then(() => {
+      self.clients.claim();
+      // Notify all open tabs that a new version is active
+      self.clients.matchAll({ type: 'window' }).then(clients => {
+        clients.forEach(client => client.postMessage({ type: 'SW_UPDATED' }));
+      });
+    })
   );
 });
 
 self.addEventListener('fetch', e => {
-  // Pa entèsepte demann API yo
-  if (e.request.url.includes('/api/')) {
-    return;
+  if (e.request.url.includes('/api/')) return;
+
+  // Network-first for HTML (always fresh), cache-first for other assets
+  const isHTML = e.request.headers.get('accept')?.includes('text/html')
+    || e.request.url.endsWith('.html') || e.request.mode === 'navigate';
+
+  if (isHTML) {
+    // Network first — fall back to cache if offline
+    e.respondWith(
+      fetch(e.request)
+        .then(response => {
+          if (response && response.status === 200) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(e.request, clone));
+          }
+          return response;
+        })
+        .catch(() => caches.match(e.request).then(r => r || caches.match('./index.html')))
+    );
+  } else {
+    // Cache first for fonts/icons/assets
+    e.respondWith(
+      caches.match(e.request).then(cached => {
+        if (cached) return cached;
+        return fetch(e.request).then(response => {
+          if (response && response.status === 200 && response.type === 'basic') {
+            caches.open(CACHE_NAME).then(cache => cache.put(e.request, response.clone()));
+          }
+          return response;
+        }).catch(() => {
+          if (e.request.mode === 'navigate') return caches.match('./index.html');
+        });
+      })
+    );
   }
-  e.respondWith(
-    caches.match(e.request).then(cachedResponse => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-      return fetch(e.request).then(response => {
-        // Kach dinamikman nouvo resous yo si yo OK
-        if (response && response.status === 200 && response.type === 'basic') {
-          const responseToCache = response.clone();
-          caches.open(CACHE_NAME).then(cache => {
-            cache.put(e.request, responseToCache);
-          });
-        }
-        return response;
-      }).catch(() => {
-        // Fallback sou index.html offline si navigasyon an echwe
-        if (e.request.mode === 'navigate') {
-          return caches.match('./index.html');
-        }
-      });
-    })
-  );
 });
