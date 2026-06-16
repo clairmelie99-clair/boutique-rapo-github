@@ -7962,8 +7962,47 @@ async function checkLicenseOnline() {
 
     localStorage.setItem('br_last_online_check', Date.now().toString());
 
-    if (data.status === 'suspended' || data.status === 'expired') {
+    if (data.status === 'suspended') {
       showSuspendedScreen();
+      return;
+    }
+
+    if (data.status === 'expired') {
+      licenseState.status = 'expired';
+      if (typeof saveLicense === 'function') saveLicense();
+      showPaywall(true);
+      if (typeof updateLicenseBadgeSettings === 'function') {
+        updateLicenseBadgeSettings();
+      }
+      return;
+    }
+
+    if (data.status === 'trial') {
+      licenseState.status = 'trial';
+      if (data.created_at) {
+        licenseState.installedAt = new Date(data.created_at).getTime();
+      }
+      if (typeof saveLicense === 'function') saveLicense();
+      
+      const daysLeft = getTrialDaysLeft();
+      const banner = document.getElementById('trial-banner');
+      const bannerText = document.getElementById('trial-banner-text');
+      
+      if (daysLeft > 0) {
+        if (banner && bannerText) {
+          bannerText.textContent = daysLeft === 1
+            ? '⚠️ Dènye jou essai ou a! Achte kounye a.'
+            : '⏳ Essai gratis: ' + daysLeft + ' jou rete';
+          banner.classList.add('visible');
+        }
+      } else {
+        if (banner) banner.classList.remove('visible');
+        showPaywall(true);
+      }
+      
+      if (typeof updateLicenseBadgeSettings === 'function') {
+        updateLicenseBadgeSettings();
+      }
       return;
     }
 

@@ -20,7 +20,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const url = `${SUPABASE_URL}/rest/v1/licences?device_id=eq.${encodeURIComponent(deviceId)}&select=status,plan,expires_at,shop_name`;
+    const url = `${SUPABASE_URL}/rest/v1/licences?device_id=eq.${encodeURIComponent(deviceId)}&select=status,plan,expires_at,shop_name,created_at`;
     const resp = await fetch(url, {
       method: 'GET',
       headers: {
@@ -59,6 +59,7 @@ export default async function handler(req, res) {
       return res.status(200).json({
         status: 'trial',
         plan: 'solo',
+        created_at: new Date().toISOString(),
         source: 'db_auto',
         version: 'v4'
       });
@@ -66,15 +67,23 @@ export default async function handler(req, res) {
 
     const lic = rows[0];
     const expiresAt = lic.expires_at ? new Date(lic.expires_at).getTime() : null;
+    const createdAt = lic.created_at ? new Date(lic.created_at).getTime() : null;
     let effectiveStatus = lic.status;
+
     if (effectiveStatus === 'active' && expiresAt && Date.now() > expiresAt) {
       effectiveStatus = 'expired';
+    } else if (effectiveStatus === 'trial' && createdAt) {
+      const trialMs = 7 * 24 * 60 * 60 * 1000;
+      if (Date.now() - createdAt > trialMs) {
+        effectiveStatus = 'expired';
+      }
     }
 
     return res.status(200).json({
       status: effectiveStatus,
       plan: lic.plan,
       expires_at: lic.expires_at,
+      created_at: lic.created_at,
       shop_name: lic.shop_name,
       source: 'db',
       version: 'v4'
